@@ -1,0 +1,16 @@
+{
+  "nearKeystoreDir": "./neardev",
+  "warchestAccountId": "neozaru14.betanet",
+  "poolAccountId": "neozaru.stakehouse.betanet",
+  "watchInterval": 300,
+  "rebalancePolicy": {
+    "type": "BEST",
+    "minRebalanceAmount": "1000000000000000000000000000"
+  },
+  "rebalanceLevels": {
+    "lowThreshold": 1.1,
+    "lowTarget": 1.2,
+    "highTarget": 1.8,
+    "highThreshold": 1.9
+  }
+}
