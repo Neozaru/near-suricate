@@ -18,16 +18,14 @@ async function main(arg1) {
       keyStore: new nearApi.keyStores.UnencryptedFileSystemKeyStore(warchestBotConfig.nearKeystoreDir || undefined)
     }
   };
-  console.log('config', warchestBotConfig)
-
 
   const near = await nearApi.connect(nearConnectionConfig);
   const warchestBot = new WarchestBot(near, warchestBotConfig);
-  console.log(moment().format() + ' - Rebalancing');
+  console.log(moment().format() + ' - Stake check');
   warchestBot.rebalance();
   if (arg1 && arg1 === '--watch') {
     setInterval(() => {
-      console.log(moment().format() + ' - Rebalancing (watch)');
+      console.log(moment().format() + ' - Stake check (watching)');
       warchestBot.rebalance();
     }, warchestBotConfig.watchInterval * 1000)
 

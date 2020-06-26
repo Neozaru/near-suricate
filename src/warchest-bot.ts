@@ -26,7 +26,7 @@ export default class WarchestBot {
       reqNextSeatPrice(near),
       reqPoolGetTotalStakedBalance(account, config.poolAccountId),
     ]).then(([seatPrice, poolStake]) => {
-      console.log('seatPrice', c2h(seatPrice), 'poolStake', c2h(poolStake), 'accountPoolStake', 'ratio', poolStake.div(seatPrice))
+      console.log('seatPrice', c2h(seatPrice), 'poolStake', c2h(poolStake), 'ratio', c2h(poolStake)/c2h(seatPrice))
       const proposedAction = generateProposedAction(config.rebalanceLevels, seatPrice, poolStake)
       if (!proposedAction) {
         console.log('Not action proposed. Everything seems to be all right.')
@@ -50,7 +50,7 @@ export default class WarchestBot {
           console.log('Action executed');
           reqPoolGetTotalStakedBalance(account, config.poolAccountId)
           .then(newPoolStake => {
-            console.log('New stake in pool', c2h(newPoolStake), 'New ratio', newPoolStake.div(seatPrice));
+            console.log('New stake in pool', c2h(newPoolStake), 'New ratio', c2h(newPoolStake)/c2h(seatPrice));
           });
         })
         .catch((err) => {
