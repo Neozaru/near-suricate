@@ -10,10 +10,13 @@
   "author": "neozaru",
   "license": "ISC",
   "devDependencies": {
+    "@types/yargs": "^15.0.5",
     "typescript": "^3.9.5"
   },
   "dependencies": {
     "moment": "^2.27.0",
-    "near-api-js": "^0.26.0"
+    "near-api-js": "^0.26.0",
+    "server": "^1.0.29",
+    "yargs": "^15.3.1"
   }
 }
