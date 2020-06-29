@@ -4,6 +4,10 @@ function c2h(value) {
   return value.toString() / Math.pow(10,24)
 }
 
+function nearToYocta(nbNear) {
+  return parseInt(nbNear).toString() + '000000000000000000000000';
+}
+
 function generateProposedAction(rebalanceLevels, seatPrice, totalStakedInPool) {
   const stakeSeatPriceRatio = totalStakedInPool / seatPrice;
   if (stakeSeatPriceRatio < rebalanceLevels.lowThreshold) {
@@ -30,10 +34,11 @@ function generateProposedAction(rebalanceLevels, seatPrice, totalStakedInPool) {
 
 
 function generateActionToExecute(rebalancePolicy, proposedAction, warchestAccountStakedBalance, warchestAccountUnstakedBalance) {
+  const minRebalanceAmount = nearToYocta(rebalancePolicy.minRebalanceAmount);
   if (proposedAction.method === 'unstake' && warchestAccountStakedBalance.lt(proposedAction.amount)) {
     console.warn(`Rebalancing policy set to ${rebalancePolicy.type} and warchest staked balance (${c2h(warchestAccountStakedBalance)}) < proposed unstake amount (${c2h(proposedAction.amount)})`)
     if (rebalancePolicy.type === 'BEST') {
-      if (warchestAccountStakedBalance.gten(rebalancePolicy.minRebalanceAmount)) {
+      if (warchestAccountStakedBalance.gten(minRebalanceAmount)) {
         return {
           method: proposedAction.method,
           amount: warchestAccountStakedBalance,
@@ -45,7 +50,7 @@ function generateActionToExecute(rebalancePolicy, proposedAction, warchestAccoun
   if (proposedAction.method === 'stake' && warchestAccountUnstakedBalance.lt(proposedAction.amount)) {
     console.warn(`Rebalancing policy set to ${rebalancePolicy.type} and warchest unstaked balance (${c2h(warchestAccountUnstakedBalance)}) < proposed stake amount (${c2h(proposedAction.amount)})`)
     if (rebalancePolicy.type === 'BEST') {
-      if (warchestAccountUnstakedBalance.gten(rebalancePolicy.minRebalanceAmount)) {
+      if (warchestAccountUnstakedBalance.gten(minRebalanceAmount)) {
         return {
           method: proposedAction.method,
           amount: warchestAccountUnstakedBalance,

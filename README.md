@@ -47,14 +47,14 @@ And modify it according to your needs :
   },
   "rebalancePolicy": {
     "type": "BEST",
-    "minRebalanceAmount": "1000000000000000000000000000"
+    "minRebalanceAmount": 1000
   }
 }
 ```
 - `nearKeyStoreDir` should have the same structure as your `~/.near-credentials/` folder (you can actually set it to this folder). It should contain at least of keys associated with `warchestAccountId`.
 - `rebalanceLevels` defines at what levels (`lowThreshold`, `highThreshold`) the automatic rebalancing should be triggered and to what levels (`lowTarget`, `highTarget`) it should put the stake by rebalancing.
 Ex: If current seat price is 1000 and the currently staked balance in the pool is 1950, it will trigger the `highThreshold` (1950 > 1000 * `1.9`) and take action to set the staked balance in the pool to 1800 (`1.8` * 1000).
-- `rebalancePolicy` defines what to do when the warchest account does have enough fund deposited in the pool to meet the stake/unstake target. Setting the type to `BEST` will make the warchest account stake/unstake as many tokens as it can even if it is not enough to meet the `lowTarget`/`highTarget`. It is triggered only if the user can stake/unstake at least `minRebalanceAmount`.
+- `rebalancePolicy` defines what to do when the warchest account does have enough fund deposited in the pool to meet the stake/unstake target. Setting the type to `BEST` will make the warchest account stake/unstake as many tokens as it can even if it is not enough to meet the `lowTarget`/`highTarget`. It is triggered only if the user can stake/unstake at least `minRebalanceAmount` (in NEAR).
 
 Another option for `rebalancePolicy` is FOK, which simply doesn't take any action if the warchest account doesn't have enough fund deposited :
 ```

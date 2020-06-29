@@ -12,6 +12,6 @@
   },
   "rebalancePolicy": {
     "type": "BEST",
-    "minRebalanceAmount": "1000000000000000000000000000"
+    "minRebalanceAmount": 1000
   }
 }
