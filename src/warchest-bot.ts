@@ -1,3 +1,4 @@
+import winston from 'winston';
 
 import {
   reqNextSeatPrice,
@@ -9,52 +10,71 @@ import {
 
 import {
   c2h,
-  generateProposedAction,
-  generateActionToExecute,
 } from './utils';
 
+import {
+  actionToString,
+  generateProposedAction,
+  generateActionToExecute,
+} from './stake-unstake-actions';
+
 export default class WarchestBot {
+
+  logger = winston.createLogger({
+    transports: [
+      new winston.transports.Console(),
+      new winston.transports.File({filename: 'warchest.log'})
+    ],
+    format: winston.format.combine(
+      winston.format.timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss'
+      }),
+      winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+    )
+  });
 
   constructor(private near, private config) {}
 
   public async rebalance() {
-    const {near, config} = this;
+    const {near, config, logger} = this;
   
+    logger.log('info', 'Warchest bot rebalance check')
     const account = await near.account(config.warchestAccountId)
-  
     Promise.all([
       reqNextSeatPrice(near),
       reqPoolGetTotalStakedBalance(account, config.poolAccountId),
-    ]).then(([seatPrice, poolStake]) => {
-      console.log('seatPrice', c2h(seatPrice), 'poolStake', c2h(poolStake), 'ratio', c2h(poolStake)/c2h(seatPrice))
-      const proposedAction = generateProposedAction(config.rebalanceLevels, seatPrice, poolStake)
+    ])
+    .then(([seatPrice, poolStake]) => {
+      logger.log('info', `seatPrice ${c2h(seatPrice)}, poolStake ${c2h(poolStake)}, ratio ${c2h(poolStake)/c2h(seatPrice)}`);
+      const proposedAction = generateProposedAction(config.rebalanceLevels, seatPrice, poolStake);
       if (!proposedAction) {
-        console.log('Not action proposed. Everything seems to be all right.')
+        logger.log('info', 'Current pool stake is conform to requirements. No action proposed.');
         return;
       }
-      console.log('Proposed action : ', proposedAction);
-      console.log('Checking if Warchest can perform the action');
+      logger.log('info', `Proposed action : ${actionToString(proposedAction)}`);
+      logger.log('info', 'Checking whether Warchest has enough funds to perform the action');
       Promise.all([
         reqPoolGetAccountStakedBalance(account, config.warchestAccountId, config.poolAccountId),
         reqPoolGetAccountUnstakedBalance(account, config.warchestAccountId, config.poolAccountId)
-      ]).then(([warchestAccountStakedBalance, warchestAccountUnstakedBalance]) => {
-        console.log('wc staked', c2h(warchestAccountStakedBalance), 'wc unstaked', c2h(warchestAccountUnstakedBalance))
+      ])
+      .then(([warchestAccountStakedBalance, warchestAccountUnstakedBalance]) => {
+        logger.log('info', `Currently staked from Warchest ${c2h(warchestAccountStakedBalance)}, currently unstaked from Warchest ${c2h(warchestAccountUnstakedBalance)}`)
         const actionToExecute = generateActionToExecute(config.rebalancePolicy, proposedAction, warchestAccountStakedBalance, warchestAccountUnstakedBalance);
         if (!actionToExecute) {
-          console.warn(`Won't execute proposed action : ${proposedAction.method} with amount ${c2h(proposedAction.amount)}`) 
+          logger.log('warn', `Won't execute proposed action : ${actionToString(proposedAction)}`) 
           return;
         }
-        console.log(`Executing action ${actionToExecute.method} with amount ${c2h(actionToExecute.amount)}`);
+        logger.log('info', `Executing action ${actionToString(actionToExecute)}`);
         executeStakeUnstakeAction(account, actionToExecute, config.poolAccountId)
-        .then((res) => {
-          console.log('Action executed');
+        .then(() => {
+          logger.log('info', 'Action executed. Checking new stakes.');
           reqPoolGetTotalStakedBalance(account, config.poolAccountId)
           .then(newPoolStake => {
-            console.log('New stake in pool', c2h(newPoolStake), 'New ratio', c2h(newPoolStake)/c2h(seatPrice));
+            logger.log('info', `seatPrice ${c2h(seatPrice)}, poolStake ${c2h(poolStake)}, ratio ${c2h(newPoolStake)/c2h(seatPrice)}`);
           });
         })
         .catch((err) => {
-          console.error('Error while executing action', err);
+          logger.log('error', 'Error while executing action', err);
         });
       })
   

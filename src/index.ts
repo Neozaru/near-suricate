@@ -1,7 +1,6 @@
 
 import WarchestBot from './warchest-bot';
 import * as nearApi from 'near-api-js';
-import moment from 'moment';
 import fs from 'fs';
 
 import yargs from 'yargs';
@@ -9,6 +8,27 @@ import yargs from 'yargs';
 function loadConfig(filename: string) {
   const configData = fs.readFileSync(filename).toString();
   return JSON.parse(configData);
+}
+
+function parseArgv() {
+  return yargs
+  .usage('Usage: $0 <command> [options]')
+  .example('$0 watch -i 3600', 'Checks and rebalances stake every hour')
+  .example('$0 -c custom-config.json', 'Checks and rebalances stake once with a custom config')
+  .command('watch', 'Keeps checking and rebalancing every <interval>', {
+    interval: {
+      alias: 'i',
+      type: 'number',
+      default: 300,
+    }
+  })
+  .alias('c', 'config')
+  .nargs('c', 1)
+  .describe('c', 'Path of config file')
+  .default('c', 'warchest-bot.config.json')
+  .help('h')
+  .alias('h', 'help')
+  .argv
 }
 
 async function buildWarchestBot(configFilename) {
@@ -28,31 +48,12 @@ async function buildWarchestBot(configFilename) {
 
 async function main() {
 
-  const argv = yargs
-  .usage('Usage: $0 <command> [options]')
-  .example('$0 watch -i 3600', 'Checks and rebalances stake every hour')
-  .example('$0 -c custom-config.json', 'Checks and rebalances stake once with a custom config')
-  .command('watch', 'Keeps checking and rebalancing every <interval>', {
-    interval: {
-      alias: 'i',
-      type: 'number',
-      default: 300,
-    }
-  })
-  .alias('c', 'config')
-  .nargs('c', 1)
-  .describe('c', 'Path of config file')
-  .default('c', 'warchest-bot.config.json')
-  .help('h')
-  .alias('h', 'help')
-  .argv
+  const argv = parseArgv();
 
   const warchestBot = await buildWarchestBot(<string>argv.config);
-  console.log(moment().format() + ' - Stake check');
   warchestBot.rebalance();
   if (argv._.includes('watch')) {
     setInterval(() => {
-      console.log(moment().format() + ' - Stake check (watching)');
       warchestBot.rebalance();
     }, <number>argv.interval * 1000)
 

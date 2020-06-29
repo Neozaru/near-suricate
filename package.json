@@ -14,9 +14,9 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
-    "moment": "^2.27.0",
     "near-api-js": "^0.26.0",
     "server": "^1.0.29",
+    "winston": "^3.3.3",
     "yargs": "^15.3.1"
   }
 }
