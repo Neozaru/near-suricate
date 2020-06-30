@@ -29,8 +29,8 @@ ${key} ${value}
 
   private generateMetricsString(metrics: SuricateMetrics) {
     return this.generateNearAmountMetric('pool_total_staked_balance', metrics.poolTotalStake)
-    + this.generateNearAmountMetric('pool_warchest_staked_balance', metrics.poolWarchestStakedBalance)
-    + this.generateNearAmountMetric('pool_warchest_unstaked_balance', metrics.poolWarchestUnstakedBalance)
+    + this.generateNearAmountMetric('pool_delegator_staked_balance', metrics.poolDelegatorStakedBalance)
+    + this.generateNearAmountMetric('pool_delegator_unstaked_balance', metrics.poolDelegatorUnstakedBalance)
     + this.generateNearAmountMetric('seat_price_next', metrics.nextSeatPrice)
     + this.generateNearAmountMetric('seat_price_low_threshold', metrics.lowThresholdSeatPrice)
     + this.generateNearAmountMetric('seat_price_high_threshold', metrics.highThresholdSeatPrice)
@@ -40,7 +40,8 @@ ${key} ${value}
     this.metrics = metrics;
   }
 
-  public serve(hostname: string, port: number) {
+  public serve() {
+    const {hostname, port} = this.metricsConfig;
     http.createServer((req, res) => {
       res.writeHead(200, {'Content-Type': 'text/plain'});
       if (req.url === '/metrics' && this.metrics) {

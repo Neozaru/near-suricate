@@ -1,2 +1,6 @@
 node_modules
 dist
+suricate.config.json
+suricate.log
+neardev
+package-lock.json

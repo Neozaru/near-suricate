@@ -29,17 +29,15 @@ export default class Suricate {
   private initializeMetricsExporter() {
     const {config, logger} = this;
 
-    const hostname = config.metrics.hostname || '0.0.0.0';
-    const port = config.metrics.port || 3039;
-    logger.log('info', `Initializing Promotheus exporter on  ${hostname}:${port}`);
+    logger.log('info', `Initializing Promotheus exporter on  ${config.metrics.hostname}:${config.metrics.port}`);
     this.prometheusExporter = new PrometheusExporter(config.metrics);
-    this.prometheusExporter.serve(hostname, port);
+    this.prometheusExporter.serve();
   }
 
   private async refreshStakingData(account) {
     const {near, config, logger} = this;
 
-    const data = await fetchStakingData(near, account, config.poolAccountId, config.warchestAccountId);
+    const data = await fetchStakingData(near, account, config.poolAccountId, config.delegatorAccountId);
     logger.log('info', `seatPrice ${c2h(data.nextSeatPrice)}, poolStake ${c2h(data.poolTotalStake)}, ratio ${c2h(data.poolTotalStake)/c2h(data.nextSeatPrice)}`);
     this.prometheusExporter && this.prometheusExporter.feed({
       ...data,
@@ -59,11 +57,12 @@ export default class Suricate {
       logger.log('info', 'Current pool stake is conform to requirements. No action proposed.');
       return;
     } 
-    const actionToExecute = generateActionToExecute(config.rebalancing.policy, proposedAction, data.poolWarchestStakedBalance, data.poolWarchestUnstakedBalance);
+    const actionToExecute = generateActionToExecute(config.rebalancing.policy, proposedAction, data.poolDelegatorStakedBalance, data.poolDelegatorUnstakedBalance);
     if (!actionToExecute) {
       logger.log('warn', `Won't execute proposed action : ${actionToString(proposedAction)}`) 
       return;
     }
+    logger.log('info', `Executing action : ${actionToString(proposedAction)}`)
     executeStakeUnstakeAction(account, actionToExecute, config.poolAccountId)
     .then(() => this.refreshStakingData(account))
     .catch(err => logger.log('error', 'Error while executing action', err));
@@ -73,7 +72,7 @@ export default class Suricate {
   public async checkAndRebalanceStakeOnce() {
     const {near, config} = this;
 
-    const account = await near.account(config.warchestAccountId);
+    const account = await near.account(config.delegatorAccountId);
     this.checkAndRebalanceStakeForAccount(account);
   }
 
@@ -82,8 +81,10 @@ export default class Suricate {
     const {near, config} = this;
 
     this.logger.log('info', `Started in monitoring mode. Will export metrics and rebalance every ${interval / 1000} seconds.`)
-    this.initializeMetricsExporter();
-    const account = await near.account(config.warchestAccountId);
+    if (config.metrics.enabled) {
+      this.initializeMetricsExporter();
+    }
+    const account = await near.account(config.delegatorAccountId);
     this.checkAndRebalanceStakeForAccount(account);
     setInterval(() => {
       this.checkAndRebalanceStakeForAccount(account)

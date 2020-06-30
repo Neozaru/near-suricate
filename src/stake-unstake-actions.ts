@@ -1,4 +1,5 @@
-import { c2h, nearToYocta } from './utils'
+import { c2h } from './utils'
+import BN from 'bn.js'
 
 interface StakeUnstakeAction {
   method: string,
@@ -27,27 +28,28 @@ function generateProposedAction(rebalanceLevels, seatPrice, totalStakedInPool): 
   return null;
 }
 
-function generateActionToExecute(rebalancePolicy, proposedAction, warchestAccountStakedBalance, warchestAccountUnstakedBalance): StakeUnstakeAction | null {
-  const minRebalanceAmount = nearToYocta(rebalancePolicy.minRebalanceAmount);
-  if (proposedAction.method === 'unstake' && warchestAccountStakedBalance.lt(proposedAction.amount)) {
-    console.warn(`Rebalancing policy set to ${rebalancePolicy.type} and warchest staked balance (${c2h(warchestAccountStakedBalance)}) < proposed unstake amount (${c2h(proposedAction.amount)})`)
+function generateActionToExecute(rebalancePolicy, proposedAction, delegatorAccountStakedBalance, delegatorAccountUnstakedBalance): StakeUnstakeAction | null {
+  const minRebalanceAmount = (new BN(parseInt(rebalancePolicy.minRebalanceAmount))).mul(new BN(10).pow(new BN(24)));
+
+  if (proposedAction.method === 'unstake' && delegatorAccountStakedBalance.lt(proposedAction.amount)) {
+    console.warn(`Rebalancing policy set to ${rebalancePolicy.type} and delegator staked balance (${c2h(delegatorAccountStakedBalance)}) < proposed unstake amount (${c2h(proposedAction.amount)})`)
     if (rebalancePolicy.type === 'BEST') {
-      if (warchestAccountStakedBalance.gten(minRebalanceAmount)) {
+      if (delegatorAccountStakedBalance.gte(minRebalanceAmount)) {
         return {
           method: proposedAction.method,
-          amount: warchestAccountStakedBalance,
+          amount: delegatorAccountStakedBalance,
         };
       }
     }
     return null;
   }
-  if (proposedAction.method === 'stake' && warchestAccountUnstakedBalance.lt(proposedAction.amount)) {
-    console.warn(`Rebalancing policy set to ${rebalancePolicy.type} and warchest unstaked balance (${c2h(warchestAccountUnstakedBalance)}) < proposed stake amount (${c2h(proposedAction.amount)})`)
+  if (proposedAction.method === 'stake' && delegatorAccountUnstakedBalance.lt(proposedAction.amount)) {
+    console.warn(`Rebalancing policy set to ${rebalancePolicy.type} and delegator unstaked balance (${c2h(delegatorAccountUnstakedBalance)}) < proposed stake amount (${c2h(proposedAction.amount)})`)
     if (rebalancePolicy.type === 'BEST') {
-      if (warchestAccountUnstakedBalance.gten(minRebalanceAmount)) {
+      if (delegatorAccountUnstakedBalance.gte(minRebalanceAmount)) {
         return {
           method: proposedAction.method,
-          amount: warchestAccountUnstakedBalance,
+          amount: delegatorAccountUnstakedBalance,
         };
       }
     }

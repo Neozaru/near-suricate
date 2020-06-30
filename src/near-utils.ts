@@ -5,8 +5,8 @@ import BN from 'bn.js';
 interface StakingData {
   nextSeatPrice: BN,
   poolTotalStake: BN,
-  poolWarchestStakedBalance: BN,
-  poolWarchestUnstakedBalance: BN,
+  poolDelegatorStakedBalance: BN,
+  poolDelegatorUnstakedBalance: BN,
 };
 
 // Vigorously stolen from https://github.com/near/near-shell/blob/6a233cc59a1d1e83ccdbe5eabcefdda9741caf9f/utils/validators-info.js
@@ -40,19 +40,19 @@ function executeStakeUnstakeAction(account, action, contractId) {
   return account.functionCall(contractId, action.method, {amount: action.amount.toString()})
 }
 
-function fetchStakingData(near, account, poolAccountId, warchestAccountId): Promise<StakingData> {
+function fetchStakingData(near, account, poolAccountId, delegatorAccountId): Promise<StakingData> {
   return Promise.all([
     reqNextSeatPrice(near),
     reqPoolGetTotalStakedBalance(account, poolAccountId),
-    reqPoolGetAccountStakedBalance(account, warchestAccountId, poolAccountId),
-    reqPoolGetAccountUnstakedBalance(account, warchestAccountId, poolAccountId)
+    reqPoolGetAccountStakedBalance(account, delegatorAccountId, poolAccountId),
+    reqPoolGetAccountUnstakedBalance(account, delegatorAccountId, poolAccountId)
   ])
-  .then(([nextSeatPrice, poolTotalStake, poolWarchestStakedBalance, poolWarchestUnstakedBalance]) => {
+  .then(([nextSeatPrice, poolTotalStake, poolDelegatorStakedBalance, poolDelegatorUnstakedBalance]) => {
     return {
       nextSeatPrice,
       poolTotalStake,
-      poolWarchestStakedBalance,
-      poolWarchestUnstakedBalance
+      poolDelegatorStakedBalance,
+      poolDelegatorUnstakedBalance
     };
   })
 

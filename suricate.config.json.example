@@ -1,15 +1,15 @@
 {
-  "warchestAccountId": "neozaru14.betanet",
+  "delegatorAccountId": "neozaru14.betanet",
   "poolAccountId": "neozaru.stakehouse.betanet",
   "near": {
     "networkId": "betanet",
-    "nodeUrl": "http://neozaru.com:3030/",
+    "nodeUrl": "https://rpc.betanet.near.org",
     "keystoreDir": "./neardev"
   },
   "rebalancing": {
     "levels": {
-      "lowThreshold": 1.4,
-      "lowTarget": 1.5,
+      "lowThreshold": 1.1,
+      "lowTarget": 1.2,
       "highTarget": 1.8,
       "highThreshold": 1.9
     },
@@ -19,7 +19,8 @@
     }
   },
   "metrics": {
-    "hostname": "localhost",
+    "enabled": true,
+    "hostname": "0.0.0.0",
     "port": 3039
   }
 }
