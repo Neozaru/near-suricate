@@ -2,18 +2,16 @@ import http from 'http';
 import { c2h } from './utils';
 import { StakingData } from './near-utils';
 
-interface WarchestMetrics extends StakingData {
-  // poolTotalStakedBalance,
-  // poolWarchestStakedBalance,
-  // poolWarchestUnstakedBalance,
-  // nextSeatPrice,
+interface SuricateMetrics extends StakingData {
   lowThresholdSeatPrice,
   highThresholdSeatPrice,
 }
 
+const metricsPrefix = 'suricate_';
+
 export default class PrometheusExporter {
 
-  private metrics: WarchestMetrics | undefined;
+  private metrics: SuricateMetrics | undefined;
 
   constructor(private metricsConfig) {}
 
@@ -26,23 +24,23 @@ ${key} ${value}
   }
 
   private generateNearAmountMetric(key: string, value): string {
-    return this.generateMetric(key, c2h(value), 'gauge');
+    return this.generateMetric(metricsPrefix + key, c2h(value), 'gauge');
   }
 
-  private generateMetricsString(metrics: WarchestMetrics) {
-    return this.generateNearAmountMetric('near_warchest_pool_total_staked_balance', metrics.poolTotalStake)
-    + this.generateNearAmountMetric('near_warchest_pool_warchest_staked_balance', metrics.poolWarchestStakedBalance)
-    + this.generateNearAmountMetric('near_warchest_pool_warchest_unstaked_balance', metrics.poolWarchestUnstakedBalance)
-    + this.generateNearAmountMetric('near_warchest_seat_price_next', metrics.nextSeatPrice)
-    + this.generateNearAmountMetric('near_warchest_seat_price_low_threshold', metrics.lowThresholdSeatPrice)
-    + this.generateNearAmountMetric('near_warchest_seat_price_high_threshold', metrics.highThresholdSeatPrice)
+  private generateMetricsString(metrics: SuricateMetrics) {
+    return this.generateNearAmountMetric('pool_total_staked_balance', metrics.poolTotalStake)
+    + this.generateNearAmountMetric('pool_warchest_staked_balance', metrics.poolWarchestStakedBalance)
+    + this.generateNearAmountMetric('pool_warchest_unstaked_balance', metrics.poolWarchestUnstakedBalance)
+    + this.generateNearAmountMetric('seat_price_next', metrics.nextSeatPrice)
+    + this.generateNearAmountMetric('seat_price_low_threshold', metrics.lowThresholdSeatPrice)
+    + this.generateNearAmountMetric('seat_price_high_threshold', metrics.highThresholdSeatPrice)
   }
 
-  public feed(metrics: WarchestMetrics) {
+  public feed(metrics: SuricateMetrics) {
     this.metrics = metrics;
   }
 
-  public serve() {
+  public serve(hostname: string, port: number) {
     http.createServer((req, res) => {
       res.writeHead(200, {'Content-Type': 'text/plain'});
       if (req.url === '/metrics' && this.metrics) {
@@ -52,7 +50,7 @@ ${key} ${value}
         res.writeHead(404, {"Content-Type": "text/html"});
         res.end();
       }
-    }).listen(this.metricsConfig.port || 3039, this.metricsConfig.hostname || undefined);
+    }).listen(port, hostname);
   }
 
 }

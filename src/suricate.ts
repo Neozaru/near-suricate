@@ -19,7 +19,7 @@ import {
 } from './stake-unstake-actions';
 import PrometheusExporter from './prometheus-exporter';
 
-export default class WarchestBot {
+export default class Suricate {
 
   private prometheusExporter;
   logger = createLogger()
@@ -29,11 +29,11 @@ export default class WarchestBot {
   private initializeMetricsExporter() {
     const {config, logger} = this;
 
-    const port = config.metrics.port || 3039;
     const hostname = config.metrics.hostname || '0.0.0.0';
+    const port = config.metrics.port || 3039;
     logger.log('info', `Initializing Promotheus exporter on  ${hostname}:${port}`);
     this.prometheusExporter = new PrometheusExporter(config.metrics);
-    this.prometheusExporter.serve(port, hostname);
+    this.prometheusExporter.serve(hostname, port);
   }
 
   private async refreshStakingData(account) {

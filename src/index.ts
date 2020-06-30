@@ -1,5 +1,5 @@
 
-import WarchestBot from './warchest-bot';
+import Suricate from './suricate';
 import * as nearApi from 'near-api-js';
 import fs from 'fs';
 
@@ -31,31 +31,31 @@ function parseArgv() {
   .alias('c', 'config')
   .nargs('c', 1)
   .describe('c', 'Config file')
-  .default('c', 'warchest-bot.config.json')
+  .default('c', 'suricate.config.json')
   .help('h')
   .alias('h', 'help')
   .argv
 }
 
-async function buildWarchestBot(configFilename) {
+async function buildSuricate(configFilename) {
   const config = loadConfig(configFilename);
 
   const nearConnectionConfig = generateConnectionConfig(config.near);
 
   const near = await nearApi.connect(nearConnectionConfig);
-  return new WarchestBot(near, config);
+  return new Suricate(near, config);
 }
 
 async function main() {
 
   const argv = parseArgv();
 
-  const warchestBot = await buildWarchestBot(<string>argv.config);
+  const suricate = await buildSuricate(<string>argv.config);
 
   if (argv._.includes(MONITOR_COMMAND)) {
-    warchestBot.startMonitoring(<number>argv.interval * 1000);
+    suricate.startMonitoring(<number>argv.interval * 1000);
   } else {
-    warchestBot.checkAndRebalanceStakeOnce();
+    suricate.checkAndRebalanceStakeOnce();
   }
 }
 
