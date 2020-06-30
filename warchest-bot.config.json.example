@@ -1,17 +1,25 @@
 {
-  "networkId": "betanet",
-  "nodeUrl": "https://rpc.betanet.near.org",
-  "nearKeystoreDir": "./neardev",
   "warchestAccountId": "neozaru14.betanet",
   "poolAccountId": "neozaru.stakehouse.betanet",
-  "rebalanceLevels": {
-    "lowThreshold": 1.1,
-    "lowTarget": 1.2,
-    "highTarget": 1.8,
-    "highThreshold": 1.9
+  "near": {
+    "networkId": "betanet",
+    "nodeUrl": "http://neozaru.com:3030/",
+    "keystoreDir": "./neardev"
   },
-  "rebalancePolicy": {
-    "type": "BEST",
-    "minRebalanceAmount": 1000
+  "rebalancing": {
+    "levels": {
+      "lowThreshold": 1.4,
+      "lowTarget": 1.5,
+      "highTarget": 1.8,
+      "highThreshold": 1.9
+    },
+    "policy": {
+      "type": "BEST",
+      "minRebalanceAmount": 1000
+    }
+  },
+  "metrics": {
+    "hostname": "localhost",
+    "port": 3039
   }
 }

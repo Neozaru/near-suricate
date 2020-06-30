@@ -5,6 +5,12 @@ import fs from 'fs';
 
 import yargs from 'yargs';
 
+import {
+  generateConnectionConfig,
+} from './near-utils';
+
+const MONITOR_COMMAND = 'monitor';
+
 function loadConfig(filename: string) {
   const configData = fs.readFileSync(filename).toString();
   return JSON.parse(configData);
@@ -13,9 +19,9 @@ function loadConfig(filename: string) {
 function parseArgv() {
   return yargs
   .usage('Usage: $0 <command> [options]')
-  .example('$0 watch -i 3600', 'Checks and rebalances stake every hour')
-  .example('$0 -c custom-config.json', 'Checks and rebalances stake once with a custom config')
-  .command('watch', 'Keeps checking and rebalancing every <interval>', {
+  .example(`$0 ${MONITOR_COMMAND} -i 3600`, `Fetches data and rebalances stake every hour`)
+  .example('$0 -c custom-config.json', 'Fetches data and rebalances stake once using a different config file')
+  .command(MONITOR_COMMAND, 'Keeps fetching data and rebalancing every <interval>', {
     interval: {
       alias: 'i',
       type: 'number',
@@ -24,7 +30,7 @@ function parseArgv() {
   })
   .alias('c', 'config')
   .nargs('c', 1)
-  .describe('c', 'Path of config file')
+  .describe('c', 'Config file')
   .default('c', 'warchest-bot.config.json')
   .help('h')
   .alias('h', 'help')
@@ -34,13 +40,7 @@ function parseArgv() {
 async function buildWarchestBot(configFilename) {
   const config = loadConfig(configFilename);
 
-  const nearConnectionConfig = {
-    nodeUrl: config.nodeUrl || 'https://rpc.betanet.near.org',
-    networkId: config.networkId || 'betanet',
-    deps: {
-      keyStore: new nearApi.keyStores.UnencryptedFileSystemKeyStore(config.nearKeystoreDir || undefined)
-    }
-  };
+  const nearConnectionConfig = generateConnectionConfig(config.near);
 
   const near = await nearApi.connect(nearConnectionConfig);
   return new WarchestBot(near, config);
@@ -51,12 +51,11 @@ async function main() {
   const argv = parseArgv();
 
   const warchestBot = await buildWarchestBot(<string>argv.config);
-  warchestBot.rebalance();
-  if (argv._.includes('watch')) {
-    setInterval(() => {
-      warchestBot.rebalance();
-    }, <number>argv.interval * 1000)
 
+  if (argv._.includes(MONITOR_COMMAND)) {
+    warchestBot.startMonitoring(<number>argv.interval * 1000);
+  } else {
+    warchestBot.checkAndRebalanceStakeOnce();
   }
 }
 

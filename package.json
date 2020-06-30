@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "start": "tsc && node dist/index.js watch",
+    "start": "tsc && node dist/index.js monitor",
     "tsc": "tsc"
   },
   "author": "neozaru",

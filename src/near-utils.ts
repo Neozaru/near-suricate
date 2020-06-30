@@ -2,6 +2,13 @@
 import * as nearApi from 'near-api-js';
 import BN from 'bn.js';
 
+interface StakingData {
+  nextSeatPrice: BN,
+  poolTotalStake: BN,
+  poolWarchestStakedBalance: BN,
+  poolWarchestUnstakedBalance: BN,
+};
+
 // Vigorously stolen from https://github.com/near/near-shell/blob/6a233cc59a1d1e83ccdbe5eabcefdda9741caf9f/utils/validators-info.js
 async function validatorsInfo(near, epochId) {
   const genesisConfig = await near.connection.provider.sendJsonRpc('EXPERIMENTAL_genesis_config', {});
@@ -33,10 +40,37 @@ function executeStakeUnstakeAction(account, action, contractId) {
   return account.functionCall(contractId, action.method, {amount: action.amount.toString()})
 }
 
+function fetchStakingData(near, account, poolAccountId, warchestAccountId): Promise<StakingData> {
+  return Promise.all([
+    reqNextSeatPrice(near),
+    reqPoolGetTotalStakedBalance(account, poolAccountId),
+    reqPoolGetAccountStakedBalance(account, warchestAccountId, poolAccountId),
+    reqPoolGetAccountUnstakedBalance(account, warchestAccountId, poolAccountId)
+  ])
+  .then(([nextSeatPrice, poolTotalStake, poolWarchestStakedBalance, poolWarchestUnstakedBalance]) => {
+    return {
+      nextSeatPrice,
+      poolTotalStake,
+      poolWarchestStakedBalance,
+      poolWarchestUnstakedBalance
+    };
+  })
+
+}
+
+function generateConnectionConfig(nearConfig) {
+  return {
+    nodeUrl: nearConfig.nodeUrl || 'https://rpc.betanet.near.org',
+    networkId: nearConfig.networkId || 'betanet',
+    deps: {
+      keyStore: new nearApi.keyStores.UnencryptedFileSystemKeyStore(nearConfig.keystoreDir || undefined)
+    }
+  };
+}
+
 export {
-  reqNextSeatPrice,
-  reqPoolGetTotalStakedBalance,
-  reqPoolGetAccountStakedBalance,
-  reqPoolGetAccountUnstakedBalance,
-  executeStakeUnstakeAction
+  fetchStakingData,
+  executeStakeUnstakeAction,
+  generateConnectionConfig,
+  StakingData,
 }

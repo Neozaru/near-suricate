@@ -1,6 +1,6 @@
 import { c2h, nearToYocta } from './utils'
 
-type StakeUnstakeAction = {
+interface StakeUnstakeAction {
   method: string,
   amount: string,
 };
