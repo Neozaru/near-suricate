@@ -1,10 +1,10 @@
 {
-  "name": "suricate",
+  "name": "near-suricate",
   "version": "0.0.1",
   "description": "Monitoring program for Near Protocol validators",
   "main": "dist/index.js",
   "bin": {
-    "suricate": "./dist/index.js"
+    "near-suricate": "./dist/index.js"
   },
   "scripts": {
     "start": "tsc && node dist/index.js monitor --config suricate.config.json",

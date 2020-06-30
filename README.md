@@ -1,4 +1,4 @@
-*DISCLAIMER : Proof of concept developed in the context of the NEAR stakewars competition (challenge004).*
+*DISCLAIMER : Proof of concept for use in Near Betanet ONLY*
 
 # Suricate
 

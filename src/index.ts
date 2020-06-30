@@ -11,6 +11,7 @@ import {
   generateConnectionConfig,
 } from './near-utils';
 
+const APP_NAME = 'near-suricate'
 const MONITOR_COMMAND = 'monitor';
 
 function loadConfigFile(configPath: string) {
@@ -20,6 +21,7 @@ function loadConfigFile(configPath: string) {
 
 function parseArgv() {
   return yargs
+  .scriptName(APP_NAME)
   .usage('Usage: $0 <command> [options]')
   .example(`$0 ${MONITOR_COMMAND} -c config.json -i 3600`, `Fetches data and rebalances stake every hour, getting config from file`)
   .example('$0 --delegatorAccountId neozaru14.betanet --poolAccountId neozaru.stakehouse.net', 'Fetches data and rebalances stake once, getting config from command arguments')
