@@ -3,6 +3,7 @@ import ISuricateAlertEmitter from "./ISuricateAlertEmitter";
 import MailEmitter from "./mail-emitter";
 import { statusAlerts } from "./alerts";
 import ConsoleEmitter from "./console-emitter";
+import { createLoggerWithLabel } from "../logger-factory";
 
 const emittersFactory = {
   'mail': config => new MailEmitter(config),
@@ -10,6 +11,8 @@ const emittersFactory = {
 }
 
 export default class AlertsManager {
+
+  logger = createLoggerWithLabel('Alerts');
 
   private emitters: ISuricateAlertEmitter[] = [];
 
@@ -24,27 +27,32 @@ export default class AlertsManager {
   }
 
   private async scanAlerts() {
-    const {near} = this;
+    const {near, alertsConfig} = this;
 
-    console.log('Scanning for alerts')
     const status = await near.connection.provider.status();
-    const alerts = statusAlerts(status, 'neozaru.stakehouse.betane');
+    const alerts = statusAlerts(status, alertsConfig.validatorAccountId);
     return alerts;
   }
 
   private async scanAndEmitAlerts() {
+    const {logger} = this;
+
+    logger.log('info', `Scanning for alerts...`);
     const alerts = await this.scanAlerts();
     // TODO filter alerts
     if (alerts.length === 0) {
-      console.log(`No alerts - won't send any`);
+      logger.log('info', `No new alerts.`);
       return Promise.resolve();
     }
-    console.log(`${alerts.length} alerts found. Emitting in [${this.alertsConfig.emitters.join(', ')}]`)
+    logger.log('info', `${alerts.length} alerts found. Emitting in [${this.alertsConfig.emitters.join(', ')}]`)
     this.emitAlerts(alerts);
   }
 
   public enable() {
-    setInterval(() => this.scanAndEmitAlerts(), this.alertsConfig.interval * 1000)
+    const {alertsConfig, logger} = this;
+    logger.log('info', `Enabling alerts...`);
+    this.scanAndEmitAlerts();
+    setInterval(() => this.scanAndEmitAlerts(), alertsConfig.interval * 1000)
   }
 
 }

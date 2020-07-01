@@ -3,10 +3,10 @@
   "poolAccountId": "neozaru.stakehouse.betanet",
   "near": {
     "networkId": "betanet",
-    "nodeUrl": "https://rpc.betanet.near.org",
-    "keystoreDir": "./neardev"
+    "nodeUrl": "https://rpc.betanet.near.org/"
   },
   "rebalancing": {
+    "enabled": true,
     "levels": {
       "lowThreshold": 1.1,
       "lowTarget": 1.2,
@@ -17,6 +17,10 @@
       "type": "BEST",
       "minRebalanceAmount": 1000
     }
+  },
+  "alerts": {
+    "enabled": true,
+    "emitters": ["console"]
   },
   "metrics": {
     "enabled": true,

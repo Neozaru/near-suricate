@@ -1,6 +1,6 @@
 import http from 'http';
-import { c2h } from './utils';
-import { StakingData } from './near-utils';
+import { c2h } from '../utils';
+import { StakingData } from '../near-utils';
 
 interface SuricateMetrics extends StakingData {
   lowThresholdSeatPrice,

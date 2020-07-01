@@ -1,4 +1,4 @@
-import { c2h } from './utils'
+import { c2h } from '../utils'
 import BN from 'bn.js'
 
 interface StakeUnstakeAction {
@@ -9,6 +9,7 @@ interface StakeUnstakeAction {
 function generateProposedAction(rebalanceLevels, seatPrice, totalStakedInPool): StakeUnstakeAction | null {
   const stakeSeatPriceRatio = totalStakedInPool / seatPrice;
   if (stakeSeatPriceRatio < rebalanceLevels.lowThreshold) {
+    console.log(`Stake / Seat Price ratio (${stakeSeatPriceRatio}) below lowThreshold (${rebalanceLevels.lowThreshold})`);
     const targetAmount = seatPrice.muln(rebalanceLevels.lowTarget);
     const diffAmount = targetAmount.sub(totalStakedInPool);
     return {
@@ -17,6 +18,7 @@ function generateProposedAction(rebalanceLevels, seatPrice, totalStakedInPool): 
     }
   } 
   if (stakeSeatPriceRatio > rebalanceLevels.highThreshold) {
+    console.log(`Stake / Seat Price ratio (${stakeSeatPriceRatio}) above highThreshold (${rebalanceLevels.highThreshold})`);
     const targetAmount = seatPrice.muln(rebalanceLevels.highTarget);
     const diffAmount = totalStakedInPool.sub(targetAmount);
     return {

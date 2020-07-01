@@ -1,6 +1,6 @@
 {
   "name": "near-suricate",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Monitoring program for Near Protocol validators",
   "main": "dist/index.js",
   "bin": {

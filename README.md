@@ -1,4 +1,4 @@
-*DISCLAIMER : Proof of concept for use in Near Betanet ONLY*
+*DISCLAIMER : Proof of concept in intense development. For use in Near Betanet ONLY*
 
 # Suricate
 
@@ -8,13 +8,14 @@ Monitoring program for Near Protocol validators
 In the Near network :
 - Keeps track of the next validator seat price and the funds staked in `poolAccoundId`.
 - Using the funds staked/unstaked from `delegatorAccountId`, rebalances the staked funds in the `poolAccountId` pool so the staked funds stay in between defined thresholds (default: between 110% of seat price and 190% of seat price).
-- Publishes delegator and pool prometheus metrics.
+- Publishes delegator and pool Prometheus metrics.
+- Emits alerts when validator looses it's status or node is outdated (more alerts to come).
 
-Know limitations : Not epoch-aware (gets info on `next` epoch), bad arithmetic precision, no alerts, no logs, totally unreliable.
+Know limitations : Not epoch-aware (gets info on `next` epoch), bad arithmetic precision.
 
 ## Usage
 
-### Production (beta)
+### Production (betanet)
 Install *suricate* globally
 ```
 npm install -g near-suricate
@@ -50,7 +51,8 @@ node dist/index.js monitor --config suricate.config.json -i 60
 
 ## Configuring
 
-Suricate accepts parameters either via command line arguments or from a config file passed with `--config`. Command line arguments (if any) override config file values.
+Suricate accepts parameters either via command line arguments or from a config file passed with `--config`. 
+Other command line arguments override config file values (ex: `--alerts.enabled=false`).
 
 ### Configuration file
 Copy the configuration file example.
@@ -64,10 +66,11 @@ And modify it according to your needs :
   "poolAccountId": "neozaru.stakehouse.betanet",
   "near": {
     "networkId": "betanet",
-    "nodeUrl": "https://rpc.betanet.near.org",
-    "keystoreDir": "./neardev"
+    "nodeUrl": "https://rpc.betanet.near.org/",
+    "keystoreDir": "./neardev/"
   },
   "rebalancing": {
+    "enabled": true,
     "levels": {
       "lowThreshold": 1.1,
       "lowTarget": 1.2,
@@ -79,6 +82,10 @@ And modify it according to your needs :
       "minRebalanceAmount": 1000
     }
   },
+  "alerts": {
+    "enabled": true,
+    "emitters": ["console"]
+  },
   "metrics": {
     "enabled": true,
     "hostname": "0.0.0.0",
@@ -86,7 +93,9 @@ And modify it according to your needs :
   }
 }
 ```
-- `near.keyStoreDir` should have the same structure as your `~/.near-credentials/` folder (you can actually set it to this folder). It should contain at least of keys associated with `delegatorAccountId`.
+#### near{}
+- `near.keystoreDir` should have the same structure as your `~/.near-credentials/` folder (which is default value if you simply omit it). It should contain at least of keys associated with `delegatorAccountId`.
+#### rebalancing{}
 - `rebalancing.levels` defines at what levels (`lowThreshold`, `highThreshold`) the automatic rebalancing should be triggered and to what levels (`lowTarget`, `highTarget`) it should put the stake by rebalancing.
 Ex: If current seat price is 1000 and the currently staked balance in the pool is 1950, it will trigger the `highThreshold` (1950 > 1000 * `1.9`) and take action to set the staked balance in the pool to 1800 (`1.8` * 1000).
 - `rebalancing.policy` defines what to do when the delegator account does have enough fund deposited in the pool to meet the stake/unstake target. Setting the type to `BEST` will make the delegator account stake/unstake as many tokens as it can even if it is not enough to meet the `lowTarget`/`highTarget`. It is triggered only if the user can stake/unstake at least `minRebalanceAmount` (in NEAR).
@@ -102,12 +111,39 @@ Another option for `rebalancing.policy` is FOK, which simply doesn't take any ac
   }
 }
 ```
+#### alerts{}
+Alerts are scanned every `alerts.interval` seconds (default very 30 minutes).
+By default, they are logged to the console. You can set up email alerts by modifying the `alerts{}` configuration :
+```
+"alerts": {
+    "enabled": true,
+    "emitters": ["mail", "console"],
+    "mail": {
+      "smtp": {
+        "host": "mail.mailo.com",
+        "port": 465,
+        "secure": true,
+        "auth": {
+          "user": "neozaru@mailoo.org",
+          "pass": "<yourMailPassword>"
+        }
+      },
+      "sender": "neozaru@mailoo.org",
+      "recipients": ["neozaru@mailoo.org", "stefano@near.org"]
+    }
+  }
+```
+... will send alert both by mail and to the console.
+Note that the `alerts.mail.smtp{}` field format is the same as [Nodemailer](https://nodemailer.com/about/) library syntax.
+Right now, alert emitted are :
+- `NOT_VALIDATOR` the validator account `validatorAccountId` (`poolAccountId`) is not in the validators list for current epoch.
+- `VALIDATOR_SLASHED` the validator account `validatorAccountId` (`poolAccountId`) has been slashed.
+- `PROTOCOL_VERSION` your target RPC node is outdated (not reliable if you use a public RPC instead of your own node)
 
 
+#### metrics{}
 
-### Exported Metrics
-
-The following metrics are exported for Prometheus on `http://<yourHost>:3039/metrics` by default.
+The following metrics are exported for *Prometheus* on `http://<yourHost>:3039/metrics` by default.
 ```
 # HELP suricate_pool_total_staked_balance suricate_pool_total_staked_balance
 # TYPE suricate_pool_total_staked_balance gauge

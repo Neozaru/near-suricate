@@ -1,7 +1,7 @@
 import winston from 'winston';
 
 
-function createLogger() {
+function createLoggerWithLabel(label: string) {
   return winston.createLogger({
     transports: [
       new winston.transports.Console(),
@@ -11,11 +11,11 @@ function createLogger() {
       winston.format.timestamp({
         format: 'YYYY-MM-DD HH:mm:ss'
       }),
-      winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+      winston.format.printf(info => `${info.timestamp} [${label}] ${info.level}: ${info.message}`)
     )
   });
 }
 
 export {
-  createLogger
+  createLoggerWithLabel
 }
