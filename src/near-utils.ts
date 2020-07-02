@@ -72,5 +72,6 @@ export {
   fetchStakingData,
   executeStakeUnstakeAction,
   generateConnectionConfig,
+  validatorsInfo,
   StakingData,
 }

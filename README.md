@@ -40,13 +40,9 @@ Alternatively, for debugging, you can compile...
 ```
 npm run tsc
 ```
-... and run (once) with default config, setting account IDs as arguments ...
+... and run with given config file
 ```
-node dist/index.js --delegatorAccountId neozaru14.betanet --poolAccountId neozaru.stakehouse.betanet
-```
-... or run (monitoring) with given config file using a custom refresh interval (every minute in this example)
-```
-node dist/index.js monitor --config suricate.config.json -i 60
+node dist/index.js --config suricate.config.json
 ```
 
 ## Configuring
@@ -116,22 +112,22 @@ Alerts are scanned every `alerts.interval` seconds (default very 30 minutes).
 By default, they are logged to the console. You can set up email alerts by modifying the `alerts{}` configuration :
 ```
 "alerts": {
-    "enabled": true,
-    "emitters": ["mail", "console"],
-    "mail": {
-      "smtp": {
-        "host": "mail.mailo.com",
-        "port": 465,
-        "secure": true,
-        "auth": {
-          "user": "neozaru@mailoo.org",
-          "pass": "<yourMailPassword>"
-        }
-      },
-      "sender": "neozaru@mailoo.org",
-      "recipients": ["neozaru@mailoo.org", "stefano@near.org"]
-    }
+  "enabled": true,
+  "emitters": ["mail", "console"],
+  "mail": {
+    "smtp": {
+      "host": "smtp.gmail.com",
+      "port": 465,
+      "secure": true,
+      "auth": {
+        "user": "neozaru14@gmail.com",
+        "pass": "<yourMailPassword>"
+      }
+    },
+    "sender": "neozaru14@gmail.com",
+    "recipients": ["neozaru14@gmail.com"]
   }
+},
 ```
 ... will send alert both by mail and to the console.
 Note that the `alerts.mail.smtp{}` field format is the same as [Nodemailer](https://nodemailer.com/about/) library syntax.

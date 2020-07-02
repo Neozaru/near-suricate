@@ -1,9 +1,10 @@
 import SuricateAlert from "./ISuricateAlert";
 import ISuricateAlertEmitter from "./ISuricateAlertEmitter";
 import MailEmitter from "./mail-emitter";
-import { statusAlerts } from "./alerts";
+import { statusAlerts, validatorsAlerts } from "./alerts";
 import ConsoleEmitter from "./console-emitter";
 import { createLoggerWithLabel } from "../logger-factory";
+import { validatorsInfo } from "../near-utils";
 
 const emittersFactory = {
   'mail': config => new MailEmitter(config),
@@ -29,8 +30,13 @@ export default class AlertsManager {
   private async scanAlerts() {
     const {near, alertsConfig} = this;
 
+    let alerts: SuricateAlert[] = [];
     const status = await near.connection.provider.status();
-    const alerts = statusAlerts(status, alertsConfig.validatorAccountId);
+    alerts = alerts.concat(statusAlerts(status));
+
+    const validators = await validatorsInfo(near, null);
+    alerts = alerts.concat(validatorsAlerts(validators, alertsConfig.validatorAccountId));
+
     return alerts;
   }
 

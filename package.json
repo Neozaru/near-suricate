@@ -1,13 +1,14 @@
 {
   "name": "near-suricate",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Monitoring program for Near Protocol validators",
+  "homepage": "https://github.com/neozaru/near-suricate",
   "main": "dist/index.js",
   "bin": {
     "near-suricate": "./dist/index.js"
   },
   "scripts": {
-    "start": "tsc && node dist/index.js monitor --config suricate.config.json",
+    "start": "tsc && node dist/index.js --config suricate.config.json",
     "tsc": "tsc"
   },
   "keywords": [
@@ -15,7 +16,9 @@
     "suricate",
     "monitor",
     "pool",
-    "stake"
+    "stake",
+    "alerts",
+    "validator"
   ],
   "preferGlobal": true,
   "author": "neozaru",
