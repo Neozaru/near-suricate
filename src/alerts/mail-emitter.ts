@@ -27,9 +27,13 @@ export default class MailEmitter implements ISuricateAlertEmitter {
     return alerts.map(MailEmitter.alertString).join('<br>');
   }
 
+  private static alertsTypesList(alerts: ISuricateAlert[]) {
+    return _.map(alerts, 'type').join(', ');
+  }
+
   public async emit(alertsReport: ISuricateAlertsReport): Promise<any> {
 
-    const {addedAlerts, removedAlerts} = alertsReport;
+    const {alerts, addedAlerts, removedAlerts} = alertsReport;
 
     const intEpochId = Math.floor(alertsReport.context.epochId);
 
@@ -42,12 +46,15 @@ export default class MailEmitter implements ISuricateAlertEmitter {
     const htmlBodyAddedAlerts = addedAlerts.length > 0 ? `New alerts detected:<br>${MailEmitter.alertsListHTML(addedAlerts)}` : null;
     const htmlBodyRemovedAlerts = removedAlerts.length > 0 ? `The following alerts are no longer an issue:<br>${MailEmitter.alertsListHTML(removedAlerts)}`: null;
 
+    const textActiveAlerts = alerts.length > 0 ? `Active alerts :\n${MailEmitter.alertsTypesList(alerts)}` : null;
+    const htmlActiveAlerts = alerts.length > 0 ? `Active alerts :<br>${MailEmitter.alertsTypesList(alerts)}` : null;
+
     let info = await this.mailTransporter.sendMail({
       from: this.mailConfig.sender,
       to: this.mailConfig.recipients.join(', '),
       subject: `[Suricate] [Epoch ${intEpochId}] ${_.compact([subjectAddedAlertsPart, subjectRemovedAlertsPart]).join(', ')}`,
-      text: `${_.compact([textBodyAddedAlerts, textBodyRemovedAlerts]).join('\n')}\nEpoch ID: ${alertsReport.context.epochId}`,
-      html: `${_.compact([htmlBodyAddedAlerts, htmlBodyRemovedAlerts]).join('<br>')}<br>Epoch ID: ${alertsReport.context.epochId}`,
+      text: `${_.compact([textBodyAddedAlerts, textBodyRemovedAlerts, textActiveAlerts]).join('\n')}\nEpoch ID: ${alertsReport.context.epochId}`,
+      html: `${_.compact([htmlBodyAddedAlerts, htmlBodyRemovedAlerts, htmlActiveAlerts]).join('<br>')}<br>Epoch ID: ${alertsReport.context.epochId}`,
     });  
     return info;
   }

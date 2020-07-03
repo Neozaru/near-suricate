@@ -13,7 +13,7 @@ export default class MetricsManager {
   }
 
 
-  private async refreshMetrics(account) {
+  public async refreshMetrics(account) {
     const {near, config, logger} = this;
     const data = await fetchStakingData(near, account, config.poolAccountId, config.delegatorAccountId);
     logger.log('info', `Updating metrics`);
@@ -25,13 +25,7 @@ export default class MetricsManager {
   }
 
   public async enable() {
-    const {near, config, logger} = this;
-
-    logger.log('info', `Enabling metrics...`);
-    const account = await near.account(config.delegatorAccountId);
     this.prometheusExporter.serve();
-    this.refreshMetrics(account);
-    setInterval(() => this.refreshMetrics(account), this.config.metrics.interval * 1000);
   }
 
 }

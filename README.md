@@ -108,7 +108,7 @@ Another option for `rebalancing.policy` is FOK, which simply doesn't take any ac
 }
 ```
 #### alerts{}
-Alerts are scanned every `alerts.interval` seconds (default very 5 minutes).
+Alerts are scanned every `interval` seconds (default every 5 minutes).
 The same alert won't be triggered twice for the same epoch, but the same alert will be triggered again if the epoch changes and the same alert persists.
 By default, they are logged to the console. You can set up email alerts by modifying the `alerts{}` configuration :
 ```

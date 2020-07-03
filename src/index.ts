@@ -13,6 +13,7 @@ import {
 import AlertsManager from './alerts/alerts-manager';
 import RebalancingManager from './rebalancing/rebalancing-manager';
 import MetricsManager from './metrics/metrics-manager';
+import FlowRunner from './flow-runner';
 
 const APP_NAME = 'near-suricate'
 
@@ -35,12 +36,13 @@ function parseArgv() {
   .alias('poolAccountId', 'validatorAccountId')
   .demandOption(['validatorAccountId', 'delegatorAccountId'])
 
+  .default('interval', 300)
+
   .default('near.networkId', 'betanet')
   .default('near.nodeUrl', 'https://rpc.betanet.near.org')
   .default('near.keystoreDir', os.homedir() + '/.near-credentials')
 
   .default('rebalancing.enabled', true)
-  .default('rebalancing.interval', 300)
   .default('rebalancing.levels.lowThreshold', 1.1)
   .default('rebalancing.levels.lowTarget', 1.2)
   .default('rebalancing.levels.highTarget', 1.8)
@@ -49,31 +51,15 @@ function parseArgv() {
   .default('rebalancing.policy.minRebalanceAmount', 1000)
 
   .default('alerts.enabled', true)
-  .default('alerts.interval', 300)
   .default('alerts.emitters', ['console'])
 
   .default('metrics.enabled', true)
-  .default('metrics.interval', 300)
   .default('metrics.hostname', '0.0.0.0')
   .default('metrics.port', 3039)
 
   .help('h')
   .alias('h', 'help')
   .argv
-}
-
-function extractFeatureConfig(config: any, featureName: string) {
-  const {delegatorAccountId, validatorAccountId} = config;
-  return {
-    delegatorAccountId,
-    validatorAccountId,
-    ...config[featureName]
-  }
-}
-
-function isFeatureEnabled(config: any, featureName: string) {
-  const featureEnabledValue = config[featureName].enabled;
-  return featureEnabledValue === true || featureEnabledValue === 'true';
 }
 
 async function main() {
@@ -84,20 +70,8 @@ async function main() {
   const nearConnectionConfig = generateConnectionConfig(config.near);
   const near = await nearApi.connect(nearConnectionConfig);
 
-  if (isFeatureEnabled(config, 'rebalancing')) {
-    const rebalancingConfig = extractFeatureConfig(config, 'rebalancing');
-    const rebalancingManager = new RebalancingManager(near, rebalancingConfig);
-    rebalancingManager.enable();
-  }
-  if (isFeatureEnabled(config, 'alerts')) {
-    const alertsConfig = extractFeatureConfig(config, 'alerts');
-    const alertsManager = new AlertsManager(near, alertsConfig);
-    alertsManager.enable();
-  }
-  if (isFeatureEnabled(config, 'metrics')) {
-    const metricsManager = new MetricsManager(near, config);
-    metricsManager.enable();
-  }
+  const flowRunner = new FlowRunner(near, config);
+  flowRunner.startFlowLoop();
 }
 
 main();

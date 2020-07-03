@@ -1,6 +1,6 @@
 {
   "name": "near-suricate",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Monitoring program for Near Protocol validators",
   "homepage": "https://github.com/neozaru/near-suricate",
   "main": "dist/index.js",

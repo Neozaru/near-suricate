@@ -47,7 +47,7 @@ export default class AlertsManager {
   private generateAlertsReport(alerts: SuricateAlert[], epochId: number): ISuricateAlertsReport {
     const {latestAlertsReport, logger} = this;
     if (Math.floor(epochId) > Math.floor(latestAlertsReport.context.epochId)) {
-      this.logger.info(`New epoch : ${epochId}. Building fresh alerts report.`)
+      logger.info(`New epoch : ${epochId}. Building fresh alerts report.`)
       return this.generateFreshAlertsReport(alerts, epochId);
     }
     return {
@@ -92,7 +92,7 @@ export default class AlertsManager {
     );
   }
 
-  private async scanAndEmitAlerts() {
+  public async scanAndEmitAlerts() {
     const {logger} = this;
 
     logger.log('info', `Scanning for alerts...`);
@@ -100,7 +100,7 @@ export default class AlertsManager {
     this.emitAlertReport(this.latestAlertsReport);
   }
 
-  public enable() {
+  private enable() {
     const {alertsConfig, logger} = this;
     logger.log('info', `Enabling alerts...`);
     this.scanAndEmitAlerts();

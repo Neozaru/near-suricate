@@ -18,7 +18,7 @@ export default class RebalancingManager {
     return data;
   }
 
-  private async checkAndRebalanceStakeForAccount(account) {
+  public async checkAndRebalanceStakeForAccount(account) {
     const {rebalancingConfig, logger} = this;
 
     logger.log('info', 'Starting refresh...')
@@ -38,17 +38,6 @@ export default class RebalancingManager {
     executeStakeUnstakeAction(account, actionToExecute, rebalancingConfig.validatorAccountId)
     .then(() => this.refreshStakingData(account))
     .catch(err => logger.log('error', 'Error while executing action', err));
-  }
-
-  public async enable() {
-    const {near, rebalancingConfig, logger} = this;
-
-    logger.log('info', `Enabling rebalancing...`);
-    const account = await near.account(rebalancingConfig.delegatorAccountId);
-    this.checkAndRebalanceStakeForAccount(account);
-    setInterval(() => {
-      this.checkAndRebalanceStakeForAccount(account)
-    }, rebalancingConfig.interval * 1000);
   }
 
 }

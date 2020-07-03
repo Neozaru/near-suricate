@@ -15,7 +15,24 @@ function computeEpochIdFromInfoAndBlockHeight(info: any, blockHeight: number) {
   return computeEpochId(blockHeight, epochLength, genesisHeight)
 }
 
+function extractFeatureConfig(config: any, featureName: string) {
+  const {delegatorAccountId, validatorAccountId} = config;
+  return {
+    delegatorAccountId,
+    validatorAccountId,
+    ...config[featureName]
+  }
+}
+
+
+function isFeatureEnabled(config: any, featureName: string) {
+  const featureEnabledValue = config[featureName].enabled;
+  return featureEnabledValue === true || featureEnabledValue === 'true';
+}
+
 export {
   c2h,
   computeEpochIdFromInfoAndBlockHeight,
+  extractFeatureConfig,
+  isFeatureEnabled,
 }
