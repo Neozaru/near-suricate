@@ -1,10 +1,14 @@
 import SuricateAlert from "./ISuricateAlert";
 import ISuricateAlertEmitter from "./ISuricateAlertEmitter";
+import ISuricateAlertsReport from "./ISuricateAlertsReport";
 import MailEmitter from "./mail-emitter";
 import { statusAlerts, validatorsAlerts } from "./alerts";
 import ConsoleEmitter from "./console-emitter";
 import { createLoggerWithLabel } from "../logger-factory";
 import { validatorsInfo } from "../near-utils";
+import { computeEpochIdFromInfoAndBlockHeight } from "../utils";
+
+import _ from 'lodash';
 
 const emittersFactory = {
   'mail': config => new MailEmitter(config),
@@ -17,14 +21,44 @@ export default class AlertsManager {
 
   private emitters: ISuricateAlertEmitter[] = [];
 
+  private latestAlertsReport: ISuricateAlertsReport;
+
   constructor(private near, private alertsConfig) {
     this.emitters = alertsConfig.emitters.map(emitterKey => emittersFactory[emitterKey](alertsConfig[emitterKey]));
+    this.latestAlertsReport = this.generateEmptyAlertsReport();
   }
 
-  private emitAlerts(alerts: SuricateAlert[]) {
-    return Promise.all(
-      this.emitters.map(emitter => emitter.emit(alerts))
-    );
+  private generateEmptyAlertsReport() {
+    return this.generateFreshAlertsReport([], -1);
+  }
+
+  private generateFreshAlertsReport(alerts: SuricateAlert[], epochId: number): ISuricateAlertsReport {
+    return {
+      alerts,
+      addedAlerts: alerts,
+      removedAlerts: [],
+      context: {
+        epochId,
+        isFirstReportForEpoch: true
+      }
+    }
+  }
+
+  private generateAlertsReport(alerts: SuricateAlert[], epochId: number): ISuricateAlertsReport {
+    const {latestAlertsReport, logger} = this;
+    if (Math.floor(epochId) > Math.floor(latestAlertsReport.context.epochId)) {
+      this.logger.info(`New epoch : ${epochId}. Building fresh alerts report.`)
+      return this.generateFreshAlertsReport(alerts, epochId);
+    }
+    return {
+      alerts,
+      addedAlerts: _.differenceBy(alerts, this.latestAlertsReport.alerts, 'type'),
+      removedAlerts: _.differenceBy(this.latestAlertsReport.alerts, alerts, 'type'),
+      context: {
+        epochId,
+        isFirstReportForEpoch: false
+      }
+    }
   }
 
   private async scanAlerts() {
@@ -32,26 +66,38 @@ export default class AlertsManager {
 
     let alerts: SuricateAlert[] = [];
     const status = await near.connection.provider.status();
+    const latestBlockHeight = status.sync_info.latest_block_height 
     alerts = alerts.concat(statusAlerts(status));
 
-    const validators = await validatorsInfo(near, null);
-    alerts = alerts.concat(validatorsAlerts(validators, alertsConfig.validatorAccountId));
+    const valInfo = await validatorsInfo(near, latestBlockHeight);
+    alerts = alerts.concat(validatorsAlerts(valInfo, alertsConfig.validatorAccountId));
 
-    return alerts;
+    const epochId = computeEpochIdFromInfoAndBlockHeight(valInfo, latestBlockHeight);
+
+    return this.generateAlertsReport(alerts, epochId);
+  }
+
+  private async emitAlertReport(alertsReport: ISuricateAlertsReport) {
+    const {alertsConfig, logger} = this;
+
+    // TODO filter alerts by user config
+    if (alertsReport.addedAlerts.length === 0 && alertsReport.removedAlerts.length === 0) {
+      logger.log('info', `No update on alerts (${alertsReport.alerts.length} current alerts)`);
+      return;
+    }
+    logger.log('info', `${alertsReport.addedAlerts.length} added alerts. ${alertsReport.removedAlerts.length} removed alerts. Emitting in [${alertsConfig.emitters.join(', ')}]`)
+
+    return Promise.all(
+      this.emitters.map(emitter => emitter.emit(alertsReport))
+    );
   }
 
   private async scanAndEmitAlerts() {
     const {logger} = this;
 
     logger.log('info', `Scanning for alerts...`);
-    const alerts = await this.scanAlerts();
-    // TODO filter alerts
-    if (alerts.length === 0) {
-      logger.log('info', `No new alerts.`);
-      return Promise.resolve();
-    }
-    logger.log('info', `${alerts.length} alerts found. Emitting in [${this.alertsConfig.emitters.join(', ')}]`)
-    this.emitAlerts(alerts);
+    this.latestAlertsReport = await this.scanAlerts();
+    this.emitAlertReport(this.latestAlertsReport);
   }
 
   public enable() {

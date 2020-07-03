@@ -1,15 +1,19 @@
 import ISuricateAlertEmitter from "./ISuricateAlertEmitter";
 import ISuricateAlert from "./ISuricateAlert";
 import { createLoggerWithLabel } from "../logger-factory";
+import ISuricateAlertsReport from "./ISuricateAlertsReport";
 
 export default class ConsoleEmitter implements ISuricateAlertEmitter {
 
-  logger = createLoggerWithLabel('[ALERT:console]')
+  logger = createLoggerWithLabel('ALERT.emitter:console')
 
-  public emit(suricateAlerts: ISuricateAlert[]): any {
+  public emit(suricateAlertsReport: ISuricateAlertsReport): any {
     const {logger} = this;
-    suricateAlerts.forEach(alert => {
-      logger.log('warn', `[ALERT] ${alert.message}`)
+    suricateAlertsReport.addedAlerts.forEach(alert => {
+      logger.log('warn', `[ADDED ALERT] ${alert.type} ${alert.message}`)
+    });
+    suricateAlertsReport.removedAlerts.forEach(alert => {
+      logger.log('warn', `[REMOVED ALERT] ${alert.type} is no longer an issue (${alert.message})`)
     });
   }
 }

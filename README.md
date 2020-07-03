@@ -8,8 +8,8 @@ Monitoring program for Near Protocol validators
 In the Near network :
 - Keeps track of the next validator seat price and the funds staked in `poolAccoundId`.
 - Using the funds staked/unstaked from `delegatorAccountId`, rebalances the staked funds in the `poolAccountId` pool so the staked funds stay in between defined thresholds (default: between 110% of seat price and 190% of seat price).
-- Publishes delegator and pool Prometheus metrics.
-- Emits alerts when validator looses it's status or node is outdated (more alerts to come).
+- Publishes delegator and pool Prometheus metrics (default on `http://<yourHost>:3039/metrics`).
+- Emits alerts when node is outdated or when validator status changes or online rate is below 95% (more alerts to come).
 
 Know limitations : Not epoch-aware (gets info on `next` epoch), bad arithmetic precision.
 
@@ -40,9 +40,9 @@ Alternatively, for debugging, you can compile...
 ```
 npm run tsc
 ```
-... and run with given config file
+... and run with given config file (at least the required <delegatorAccountId> and <poolAccountId> fields must be present in the file)
 ```
-node dist/index.js --config suricate.config.json
+node dist --config suricate.config.json
 ```
 
 ## Configuring
@@ -108,7 +108,8 @@ Another option for `rebalancing.policy` is FOK, which simply doesn't take any ac
 }
 ```
 #### alerts{}
-Alerts are scanned every `alerts.interval` seconds (default very 30 minutes).
+Alerts are scanned every `alerts.interval` seconds (default very 5 minutes).
+The same alert won't be triggered twice for the same epoch, but the same alert will be triggered again if the epoch changes and the same alert persists.
 By default, they are logged to the console. You can set up email alerts by modifying the `alerts{}` configuration :
 ```
 "alerts": {
@@ -133,6 +134,7 @@ By default, they are logged to the console. You can set up email alerts by modif
 Note that the `alerts.mail.smtp{}` field format is the same as [Nodemailer](https://nodemailer.com/about/) library syntax.
 Right now, alert emitted are :
 - `NOT_VALIDATOR` the validator account `validatorAccountId` (`poolAccountId`) is not in the validators list for current epoch.
+- `VALIDATOR_EXPECTED_PRODUCED_BLOCKS` is triggered when a validator produced only 95% (or less) of the expected blocks.
 - `VALIDATOR_SLASHED` the validator account `validatorAccountId` (`poolAccountId`) has been slashed.
 - `PROTOCOL_VERSION` your target RPC node is outdated (not reliable if you use a public RPC instead of your own node)
 
@@ -165,3 +167,7 @@ suricate_seat_price_low_threshold 149235.59898509088
 # TYPE suricate_seat_price_high_threshold gauge
 suricate_seat_price_high_threshold 202534.43736531216
 ```
+
+## Bugs & Feature requests
+
+Please use *Github*'s *issues* section. I'll be happy to try to help you.

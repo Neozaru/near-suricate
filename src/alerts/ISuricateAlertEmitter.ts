@@ -1,5 +1,5 @@
-import ISuricateAlert from "./ISuricateAlert";
+import ISuricateAlertsReport from "./ISuricateAlertsReport";
 
 export default interface ISuricateAlertEmitter {
-  emit: (alerts: ISuricateAlert[]) => Promise<any>
+  emit: (alertsReport: ISuricateAlertsReport) => Promise<any>
 }

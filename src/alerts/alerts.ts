@@ -1,6 +1,8 @@
 import SuricateAlert from './ISuricateAlert';
 
-
+// TODO: Make it somewhat configurable
+const BLOCKS_PRODUCED_EXPECTED_ALERT_RATIO = 0.95;
+const BLOCKS_PRODUCED_EXPECTED_SLASHING_RATIO = 0.90;
 
 function createAlertProtocolVersion(nodeProtocolVersion: number, latestProtocolVersion: number): SuricateAlert {
   return {
@@ -13,10 +15,10 @@ function createAlertProtocolVersion(nodeProtocolVersion: number, latestProtocolV
   }
 }
 
-function createAlertValidatorExpectedProducedBlocks(poolAccountId: string, producedBlocks: number, expectedBlocks: number): SuricateAlert {
+function createAlertValidatorExpectedProducedBlocks(poolAccountId: string, producedExpectedRatio: number, producedBlocks: number, expectedBlocks: number): SuricateAlert {
   return {
     type: 'VALIDATOR_EXPECTED_PRODUCED_BLOCKS',
-    message: `Account ${poolAccountId} has produced a different number of blocks (${producedBlocks}) than expected (${expectedBlocks}).`,
+    message: `Account ${poolAccountId} has produced less blocks (${producedBlocks}) than expected (${expectedBlocks}). Online status is only ${Math.round(producedExpectedRatio*10000)/100}%, close to the slashing threshold (${BLOCKS_PRODUCED_EXPECTED_SLASHING_RATIO*100}%)`,
     values: {
       poolAccountId,
       producedBlocks,
@@ -39,7 +41,7 @@ function createAlertNotValidator(poolAccountId: string, validators: any[]): Suri
 function createAlertValidatorSlashed(poolAccountId: string): SuricateAlert {
   return {
     type: 'VALIDATOR_SLASHED',
-    message: `Account ${poolAccountId} is slashed.`,
+    message: `Account ${poolAccountId} is slashed. It won't be able to continue validating.`,
     values: {
       poolAccountId,
     }
@@ -56,8 +58,10 @@ function validatorsAlerts(validators: any, poolAccountId: string): SuricateAlert
   } else {
     if (userValidator.is_slashed === true) {
       alerts.push(createAlertValidatorSlashed(poolAccountId))
-    } else if (userValidator.num_produced_blocks != userValidator.num_expected_blocks) {
-      alerts.push(createAlertValidatorExpectedProducedBlocks(poolAccountId, userValidator.num_produced_blocks, userValidator.num_expected_blocks));
+    } 
+    const blocksProducedExpectedRatio = userValidator.num_produced_blocks / userValidator.num_expected_blocks
+    if (blocksProducedExpectedRatio < BLOCKS_PRODUCED_EXPECTED_ALERT_RATIO) {
+      alerts.push(createAlertValidatorExpectedProducedBlocks(poolAccountId, blocksProducedExpectedRatio, userValidator.num_produced_blocks, userValidator.num_expected_blocks));
     }
   }
   return alerts;

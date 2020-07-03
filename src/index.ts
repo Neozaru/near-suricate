@@ -15,7 +15,6 @@ import RebalancingManager from './rebalancing/rebalancing-manager';
 import MetricsManager from './metrics/metrics-manager';
 
 const APP_NAME = 'near-suricate'
-const MONITOR_COMMAND = 'monitor';
 
 function loadConfigFile(configPath: string) {
   const configData = fs.readFileSync(configPath).toString();
@@ -25,17 +24,16 @@ function loadConfigFile(configPath: string) {
 function parseArgv() {
   return yargs
   .scriptName(APP_NAME)
-  .usage('Usage: $0 <command> [options]')
-  .example(`$0 ${MONITOR_COMMAND} -c config.json -i 3600`, `Fetches data and rebalances stake every hour, getting config from file`)
-  .example('$0 --delegatorAccountId neozaru14.betanet --poolAccountId neozaru.stakehouse.net', 'Fetches data and rebalances stake once, getting config from command arguments')
+  .usage('Usage: $0 [options]')
+  .example(`$0 --config config.json`, `Run using given config file - at least <delegatorAccountId> and <poolAccountId> fields must exist in config.json`)
+  .example('$0 --delegatorAccountId neozaru14.betanet --poolAccountId neozaru.stakehouse.net', 'Run using default configuration and account arguments.')
   .config('config', (configPath) => {
     return loadConfigFile(configPath);
   })
   .alias('c', 'config')
 
   .alias('poolAccountId', 'validatorAccountId')
-  .demandOption('validatorAccountId')
-  .demandOption('delegatorAccountId')
+  .demandOption(['validatorAccountId', 'delegatorAccountId'])
 
   .default('near.networkId', 'betanet')
   .default('near.nodeUrl', 'https://rpc.betanet.near.org')
@@ -51,7 +49,7 @@ function parseArgv() {
   .default('rebalancing.policy.minRebalanceAmount', 1000)
 
   .default('alerts.enabled', true)
-  .default('alerts.interval', 1800)
+  .default('alerts.interval', 300)
   .default('alerts.emitters', ['console'])
 
   .default('metrics.enabled', true)
