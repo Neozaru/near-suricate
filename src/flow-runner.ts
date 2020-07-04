@@ -4,6 +4,7 @@ import RebalancingManager from './rebalancing/rebalancing-manager';
 import AlertsManager from './alerts/alerts-manager';
 import MetricsManager from './metrics/metrics-manager';
 import { createLoggerWithLabel } from './logger-factory';
+import ISuricateAlertsReport from './alerts/ISuricateAlertsReport';
 
 export default class FlowRunner {
 
@@ -29,12 +30,12 @@ export default class FlowRunner {
     if (this.isBalancingEnabled()) {
       rebalancingResult = await rebalancingManager.checkAndRebalanceStakeForAccount(account)
     }
-    let alertsResult;
+    let alertsReport: ISuricateAlertsReport | undefined;
     if (this.isAlertsEnabled()) {
-      alertsResult = await alertsManager.scanAndEmitAlerts({rebalancingResult});
+      alertsReport = await alertsManager.scanAndEmitAlerts();
     }
     if (this.isMetricsEnabled()) {
-      await metricsManager.refreshMetrics(account, {alertsResult});
+      await metricsManager.refreshMetrics(account, rebalancingResult, alertsReport);
     }
   }
 

@@ -1,12 +1,7 @@
 import { c2h } from '../utils'
 import BN from 'bn.js'
 
-interface StakeUnstakeAction {
-  method: string,
-  amount: string,
-};
-
-function generateProposedAction(rebalanceLevels, seatPrice, totalStakedInPool): StakeUnstakeAction | null {
+function generateProposedAction(rebalanceLevels, seatPrice, totalStakedInPool): IRebalancingAction | null {
   const stakeSeatPriceRatio = totalStakedInPool / seatPrice;
   if (stakeSeatPriceRatio < rebalanceLevels.lowThreshold) {
     console.log(`Stake / Seat Price ratio (${stakeSeatPriceRatio}) below lowThreshold (${rebalanceLevels.lowThreshold})`);
@@ -30,7 +25,7 @@ function generateProposedAction(rebalanceLevels, seatPrice, totalStakedInPool): 
   return null;
 }
 
-function generateActionToExecute(rebalancePolicy, proposedAction, delegatorAccountStakedBalance, delegatorAccountUnstakedBalance): StakeUnstakeAction | null {
+function generateActionToExecute(rebalancePolicy, proposedAction, delegatorAccountStakedBalance, delegatorAccountUnstakedBalance): IRebalancingAction | null {
   const minRebalanceAmount = (new BN(parseInt(rebalancePolicy.minRebalanceAmount))).mul(new BN(10).pow(new BN(24)));
 
   if (proposedAction.method === 'unstake' && delegatorAccountStakedBalance.lt(proposedAction.amount)) {
@@ -60,7 +55,7 @@ function generateActionToExecute(rebalancePolicy, proposedAction, delegatorAccou
   return proposedAction;
 }
 
-function actionToString(action: StakeUnstakeAction): string {
+function actionToString(action: IRebalancingAction): string {
   return `${action.method} ${c2h(action.amount)}`
 }
 

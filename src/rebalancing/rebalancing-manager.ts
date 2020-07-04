@@ -18,26 +18,48 @@ export default class RebalancingManager {
     return data;
   }
 
+  // private rebalancingReport(proposedAction, ) {
+
+  // }
+  private rebalancingReport(stakingData: any, proposedAction?: IRebalancingAction, actionToExecute?: IRebalancingAction, executionError?: any) {
+    const actionExecuted: boolean = !!actionToExecute && !executionError;
+    return Promise.resolve({
+      stakingData,
+      proposedAction,
+      actionToExecute,
+      result: {
+        actionExecuted,
+        error: executionError
+      }
+    });
+  }
+
   public async checkAndRebalanceStakeForAccount(account) {
     const {rebalancingConfig, logger} = this;
 
     logger.log('info', 'Starting refresh...')
-    const data = await this.refreshStakingData(account);
-    const proposedAction = generateProposedAction(rebalancingConfig.levels, data.nextSeatPrice, data.poolTotalStake);
+    const stakingData = await this.refreshStakingData(account);
+    const proposedAction = generateProposedAction(rebalancingConfig.levels, stakingData.nextSeatPrice, stakingData.poolTotalStake);
     if (!proposedAction) {
       logger.log('info', 'Current pool stake is conform to requirements. No action proposed.');
-      return;
+      return this.rebalancingReport(stakingData);
     }
     logger.log('warn', `Proposed action : ${actionToString(proposedAction)}`);
-    const actionToExecute = generateActionToExecute(rebalancingConfig.policy, proposedAction, data.poolDelegatorStakedBalance, data.poolDelegatorUnstakedBalance);
+    const actionToExecute = generateActionToExecute(rebalancingConfig.policy, proposedAction, stakingData.poolDelegatorStakedBalance, stakingData.poolDelegatorUnstakedBalance);
     if (!actionToExecute) {
       logger.log('warn', `Won't execute proposed action : ${actionToString(proposedAction)}`) 
-      return;
+      return this.rebalancingReport(stakingData, proposedAction);
     }
     logger.log('info', `Executing action : ${actionToString(proposedAction)}`)
-    executeStakeUnstakeAction(account, actionToExecute, rebalancingConfig.validatorAccountId)
-    .then(() => this.refreshStakingData(account))
-    .catch(err => logger.log('error', 'Error while executing action', err));
+    return executeStakeUnstakeAction(account, actionToExecute, rebalancingConfig.validatorAccountId)
+    .then(async () => {
+      const newStakingData = await this.refreshStakingData(account);
+      return this.rebalancingReport(newStakingData, proposedAction, actionToExecute);
+    })
+    .catch(err => {
+      logger.log('error', 'Error while executing action', err);
+      return this.rebalancingReport(stakingData, proposedAction, actionToExecute, err);
+    });
   }
 
 }

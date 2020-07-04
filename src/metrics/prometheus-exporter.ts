@@ -3,8 +3,9 @@ import { c2h } from '../utils';
 import { StakingData } from '../near-utils';
 
 interface SuricateMetrics extends StakingData {
-  lowThresholdSeatPrice,
-  highThresholdSeatPrice,
+  lowThresholdSeatPrice: number,
+  highThresholdSeatPrice: number,
+  alertsCount: number,
 }
 
 const metricsPrefix = 'suricate_';
@@ -34,6 +35,7 @@ ${key} ${value}
     + this.generateNearAmountMetric('seat_price_next', metrics.nextSeatPrice)
     + this.generateNearAmountMetric('seat_price_low_threshold', metrics.lowThresholdSeatPrice)
     + this.generateNearAmountMetric('seat_price_high_threshold', metrics.highThresholdSeatPrice)
+    + this.generateNearAmountMetric('alerts_count', metrics.alertsCount)
   }
 
   public feed(metrics: SuricateMetrics) {

@@ -166,6 +166,10 @@ suricate_seat_price_low_threshold 149235.59898509088
 # HELP suricate_seat_price_high_threshold suricate_seat_price_high_threshold
 # TYPE suricate_seat_price_high_threshold gauge
 suricate_seat_price_high_threshold 202534.43736531216
+
+# HELP suricate_alerts_count suricate_alerts_count
+# TYPE suricate_alerts_count gauge
+suricate_alerts_count 0
 ```
 
 ## Bugs & Feature requests

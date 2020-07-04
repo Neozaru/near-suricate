@@ -82,10 +82,10 @@ export default class AlertsManager {
 
     // TODO filter alerts by user config
     if (alertsReport.addedAlerts.length === 0 && alertsReport.removedAlerts.length === 0) {
-      logger.log('info', `No update on alerts (${alertsReport.alerts.length} current alerts)`);
+      logger.log('info', `No update on alerts (${alertsReport.alerts.length} current alerts).`);
       return;
     }
-    logger.log('info', `${alertsReport.addedAlerts.length} added alerts. ${alertsReport.removedAlerts.length} removed alerts. Emitting in [${alertsConfig.emitters.join(', ')}]`)
+    logger.log('info', `${alertsReport.addedAlerts.length} added alerts. ${alertsReport.removedAlerts.length} removed alerts. Emitting in [${alertsConfig.emitters.join(', ')}].`)
 
     return Promise.all(
       this.emitters.map(emitter => emitter.emit(alertsReport))
@@ -98,13 +98,7 @@ export default class AlertsManager {
     logger.log('info', `Scanning for alerts...`);
     this.latestAlertsReport = await this.scanAlerts();
     this.emitAlertReport(this.latestAlertsReport);
-  }
-
-  private enable() {
-    const {alertsConfig, logger} = this;
-    logger.log('info', `Enabling alerts...`);
-    this.scanAndEmitAlerts();
-    setInterval(() => this.scanAndEmitAlerts(), alertsConfig.interval * 1000)
+    return this.latestAlertsReport;
   }
 
 }
