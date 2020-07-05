@@ -3,7 +3,7 @@ import * as nearApi from 'near-api-js';
 import BN from 'bn.js';
 
 interface StakingData {
-  nextSeatPrice: BN,
+  seatPrices: {current: BN, next: BN},
   poolTotalStake: BN,
   poolDelegatorStakedBalance: BN,
   poolDelegatorUnstakedBalance: BN,
@@ -18,9 +18,12 @@ async function validatorsInfo(near, epochId) {
   return result;
 }
 
-function reqNextSeatPrice(near) {
+function reqSeatPrices(near) {
   return validatorsInfo(near, null).then((validatorsRes) => {
-    return nearApi.validators.findSeatPrice(validatorsRes.next_validators, validatorsRes.numSeats);
+    return {
+      next: nearApi.validators.findSeatPrice(validatorsRes.next_validators, validatorsRes.numSeats),
+      current: nearApi.validators.findSeatPrice(validatorsRes.current_validators, validatorsRes.numSeats)
+    };
   }); 
 }
 
@@ -42,14 +45,14 @@ function executeStakeUnstakeAction(account, action, contractId) {
 
 function fetchStakingData(near, account, poolAccountId, delegatorAccountId): Promise<StakingData> {
   return Promise.all([
-    reqNextSeatPrice(near),
+    reqSeatPrices(near),
     reqPoolGetTotalStakedBalance(account, poolAccountId),
     reqPoolGetAccountStakedBalance(account, delegatorAccountId, poolAccountId),
     reqPoolGetAccountUnstakedBalance(account, delegatorAccountId, poolAccountId)
   ])
-  .then(([nextSeatPrice, poolTotalStake, poolDelegatorStakedBalance, poolDelegatorUnstakedBalance]) => {
+  .then(([seatPrices, poolTotalStake, poolDelegatorStakedBalance, poolDelegatorUnstakedBalance]) => {
     return {
-      nextSeatPrice,
+      seatPrices,
       poolTotalStake,
       poolDelegatorStakedBalance,
       poolDelegatorUnstakedBalance

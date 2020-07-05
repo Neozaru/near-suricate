@@ -14,13 +14,10 @@ export default class RebalancingManager {
     const {near, rebalancingConfig, logger} = this;
 
     const data = await fetchStakingData(near, account, rebalancingConfig.validatorAccountId, rebalancingConfig.delegatorAccountId);
-    logger.log('info', `seatPrice ${c2h(data.nextSeatPrice)}, poolStake ${c2h(data.poolTotalStake)}, ratio ${c2h(data.poolTotalStake)/c2h(data.nextSeatPrice)} (desired range : [${rebalancingConfig.levels.lowThreshold}, ${rebalancingConfig.levels.highThreshold}])`);
+    logger.log('info', `current seatPrice ${c2h(data.seatPrices.current)}, next seatPrice ${c2h(data.seatPrices.next)}, poolStake ${c2h(data.poolTotalStake)}, ratio ${c2h(data.poolTotalStake)/c2h(data.seatPrices.next)} (desired range : [${rebalancingConfig.levels.lowThreshold}, ${rebalancingConfig.levels.highThreshold}])`);
     return data;
   }
 
-  // private rebalancingReport(proposedAction, ) {
-
-  // }
   private rebalancingReport(stakingData: any, proposedAction?: IRebalancingAction, actionToExecute?: IRebalancingAction, executionError?: any) {
     const actionExecuted: boolean = !!actionToExecute && !executionError;
     return Promise.resolve({
@@ -39,7 +36,7 @@ export default class RebalancingManager {
 
     logger.log('info', 'Starting refresh...')
     const stakingData = await this.refreshStakingData(account);
-    const proposedAction = generateProposedAction(rebalancingConfig.levels, stakingData.nextSeatPrice, stakingData.poolTotalStake);
+    const proposedAction = generateProposedAction(rebalancingConfig.levels, stakingData.seatPrices.next, stakingData.poolTotalStake);
     if (!proposedAction) {
       logger.log('info', 'Current pool stake is conform to requirements. No action proposed.');
       return this.rebalancingReport(stakingData);

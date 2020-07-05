@@ -1,10 +1,11 @@
+import BN from 'bn.js';
 import http from 'http';
 import { c2h } from '../utils';
 import { StakingData } from '../near-utils';
 
 interface SuricateMetrics extends StakingData {
-  lowThresholdSeatPrice: number,
-  highThresholdSeatPrice: number,
+  lowThresholdSeatPrice: BN,
+  highThresholdSeatPrice: BN,
   alertsCount: number,
 }
 
@@ -24,18 +25,23 @@ ${key} ${value}
 `;
   }
 
-  private generateNearAmountMetric(key: string, value): string {
+  private generateNearAmountMetric(key: string, value: BN): string {
     return this.generateMetric(metricsPrefix + key, c2h(value), 'gauge');
+  }
+
+  private generateGaugeMetric(key: string, value: number) {
+    return this.generateMetric(metricsPrefix + key, value, 'gauge');
   }
 
   private generateMetricsString(metrics: SuricateMetrics) {
     return this.generateNearAmountMetric('pool_total_staked_balance', metrics.poolTotalStake)
     + this.generateNearAmountMetric('pool_delegator_staked_balance', metrics.poolDelegatorStakedBalance)
     + this.generateNearAmountMetric('pool_delegator_unstaked_balance', metrics.poolDelegatorUnstakedBalance)
-    + this.generateNearAmountMetric('seat_price_next', metrics.nextSeatPrice)
+    + this.generateNearAmountMetric('seat_price_current', metrics.seatPrices.current)
+    + this.generateNearAmountMetric('seat_price_next', metrics.seatPrices.next)
     + this.generateNearAmountMetric('seat_price_low_threshold', metrics.lowThresholdSeatPrice)
     + this.generateNearAmountMetric('seat_price_high_threshold', metrics.highThresholdSeatPrice)
-    + this.generateNearAmountMetric('alerts_count', metrics.alertsCount)
+    + this.generateGaugeMetric('alerts_count', metrics.alertsCount)
   }
 
   public feed(metrics: SuricateMetrics) {

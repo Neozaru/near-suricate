@@ -17,8 +17,8 @@ export default class MetricsManager {
     const {config} = this;
     return {
       ...stakingData,
-      lowThresholdSeatPrice: stakingData.nextSeatPrice.muln(config.rebalancing.levels.lowThreshold),
-      highThresholdSeatPrice: stakingData.nextSeatPrice.muln(config.rebalancing.levels.highThreshold),
+      lowThresholdSeatPrice: stakingData.seatPrices.next.muln(config.rebalancing.levels.lowThreshold),
+      highThresholdSeatPrice: stakingData.seatPrices.next.muln(config.rebalancing.levels.highThreshold),
       alertsCount: alertsReport ? alertsReport.alerts.length : 0
     }
   }
