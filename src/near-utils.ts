@@ -19,8 +19,8 @@ async function validatorsInfo(near, epochId) {
 }
 
 function reqNextSeatPrice(near) {
-  return validatorsInfo(near, null).then((validatorsRes) => { // null == Next epoch, not current
-    return nearApi.validators.findSeatPrice(validatorsRes.current_validators, validatorsRes.numSeats);
+  return validatorsInfo(near, null).then((validatorsRes) => {
+    return nearApi.validators.findSeatPrice(validatorsRes.next_validators, validatorsRes.numSeats);
   }); 
 }
 
