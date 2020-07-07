@@ -133,8 +133,10 @@ By default, they are logged to the console. You can set up email alerts by modif
 ... will send alert both by mail and to the console.
 Note that the `alerts.mail.smtp{}` field format is the same as [Nodemailer](https://nodemailer.com/about/) library syntax.
 Right now, alert emitted are :
-- `NOT_VALIDATOR` the validator account `validatorAccountId` (`poolAccountId`) is not in the validators list for current epoch.
+- `NOT_CURRENT_VALIDATOR` the validator account `validatorAccountId` (`poolAccountId`) is not in the validators list for current epoch.
+- `NOT_NEXT_VALIDATOR` the validator account `validatorAccountId` (`poolAccountId`) is not in the validators list for next epoch.
 - `VALIDATOR_EXPECTED_PRODUCED_BLOCKS` is triggered when a validator produced only 95% (or less) of the expected blocks.
+- `VALIDATOR_KICKED_OUT` is triggered when validator was kicked out during previous (ie: for being offline for too long during previous epoch).
 - `VALIDATOR_SLASHED` the validator account `validatorAccountId` (`poolAccountId`) has been slashed.
 - `PROTOCOL_VERSION` your target RPC node is outdated (not reliable if you use a public RPC instead of your own node)
 

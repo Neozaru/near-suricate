@@ -66,6 +66,7 @@ export default class AlertsManager {
 
     let alerts: SuricateAlert[] = [];
     const status = await near.connection.provider.status();
+    // console.log('Status', status);
     const latestBlockHeight = status.sync_info.latest_block_height 
     alerts = alerts.concat(statusAlerts(status));
 

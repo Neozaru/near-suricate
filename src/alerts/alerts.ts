@@ -2,7 +2,7 @@ import SuricateAlert from './ISuricateAlert';
 
 // TODO: Make it somewhat configurable
 const BLOCKS_PRODUCED_EXPECTED_ALERT_RATIO = 0.95;
-const BLOCKS_PRODUCED_EXPECTED_SLASHING_RATIO = 0.90;
+const BLOCKS_PRODUCED_EXPECTED_KICKOUT_RATIO = 0.90;
 
 function createAlertProtocolVersion(nodeProtocolVersion: number, latestProtocolVersion: number): SuricateAlert {
   return {
@@ -18,7 +18,7 @@ function createAlertProtocolVersion(nodeProtocolVersion: number, latestProtocolV
 function createAlertValidatorExpectedProducedBlocks(poolAccountId: string, producedExpectedRatio: number, producedBlocks: number, expectedBlocks: number): SuricateAlert {
   return {
     type: 'VALIDATOR_EXPECTED_PRODUCED_BLOCKS',
-    message: `Account ${poolAccountId} has produced less blocks (${producedBlocks}) than expected (${expectedBlocks}). Online status is only ${Math.round(producedExpectedRatio*10000)/100}%, close to the slashing threshold (${BLOCKS_PRODUCED_EXPECTED_SLASHING_RATIO*100}%)`,
+    message: `Account ${poolAccountId} has produced less blocks (${producedBlocks}) than expected (${expectedBlocks}). Online status is only ${Math.round(producedExpectedRatio*10000)/100}%, close to the kickout threshold (${BLOCKS_PRODUCED_EXPECTED_KICKOUT_RATIO*100}%)`,
     values: {
       poolAccountId,
       producedBlocks,
@@ -27,13 +27,14 @@ function createAlertValidatorExpectedProducedBlocks(poolAccountId: string, produ
   }
 }
 
-function createAlertNotValidator(poolAccountId: string, validators: any[]): SuricateAlert {
+function createAlertNotValidator(poolAccountId: string, validators: any[], epochType: 'NEXT' | 'CURRENT'): SuricateAlert {
   return {
-    type: 'NOT_VALIDATOR',
-    message: `Account ${poolAccountId} not found in validator's list.`,
+    type: `NOT_${epochType}_VALIDATOR`,
+    message: `Account ${poolAccountId} not found in ${epochType} validator's list.`,
     values: {
       poolAccountId,
       validators,
+      epochType,
     }
   }
 }
@@ -48,13 +49,28 @@ function createAlertValidatorSlashed(poolAccountId: string): SuricateAlert {
   }
 }
 
+function createAlertValidatorKickedOut(poolAccountId: string, kickoutReason: any): SuricateAlert {
+  return {
+    type: 'VALIDATOR_KICKED_OUT',
+    message: `Account ${poolAccountId} has been kicked out. It won't be validating for the next epoch. Reason : ${JSON.stringify(kickoutReason)}`,
+    values: {
+      poolAccountId,
+      kickoutReason,
+    }
+  }
+}
+
+function findValidator(validators, poolAccountId: string) {
+  return validators.find(v => v.account_id === poolAccountId);
+}
+
 // TODO: Type validators
-function validatorsAlerts(validators: any, poolAccountId: string): SuricateAlert[] {
+function validatorsAlerts(validatorsInfo: any, poolAccountId: string): SuricateAlert[] {
   let alerts: SuricateAlert[] = [];
 
-  const userValidator = validators.current_validators.find(v => v.account_id === poolAccountId);
+  const userValidator = findValidator(validatorsInfo.current_validators, poolAccountId);
   if (!userValidator) {
-    alerts.push(createAlertNotValidator(poolAccountId, validators.current_validators));
+    alerts.push(createAlertNotValidator(poolAccountId, validatorsInfo.current_validators, 'CURRENT'));
   } else {
     if (userValidator.is_slashed === true) {
       alerts.push(createAlertValidatorSlashed(poolAccountId))
@@ -63,6 +79,13 @@ function validatorsAlerts(validators: any, poolAccountId: string): SuricateAlert
     if (blocksProducedExpectedRatio < BLOCKS_PRODUCED_EXPECTED_ALERT_RATIO) {
       alerts.push(createAlertValidatorExpectedProducedBlocks(poolAccountId, blocksProducedExpectedRatio, userValidator.num_produced_blocks, userValidator.num_expected_blocks));
     }
+  }
+  if (!findValidator(validatorsInfo.next_validators, poolAccountId)) {
+    alerts.push(createAlertNotValidator(poolAccountId, validatorsInfo.next_validators, 'NEXT'))
+  }
+  const validatorKickout = findValidator(validatorsInfo.prev_epoch_kickout, poolAccountId);
+  if (validatorKickout) {
+    alerts.push(createAlertValidatorKickedOut(poolAccountId, validatorKickout.reason))
   }
   return alerts;
 }
