@@ -39,6 +39,7 @@ ${key} ${value}
     + this.generateNearAmountMetric('pool_delegator_unstaked_balance', metrics.poolDelegatorUnstakedBalance)
     + this.generateNearAmountMetric('seat_price_current', metrics.seatPrices.current)
     + this.generateNearAmountMetric('seat_price_next', metrics.seatPrices.next)
+    + this.generateNearAmountMetric('seat_price_proposals', metrics.seatPrices.proposals)
     + this.generateNearAmountMetric('seat_price_low_threshold', metrics.lowThresholdSeatPrice)
     + this.generateNearAmountMetric('seat_price_high_threshold', metrics.highThresholdSeatPrice)
     + this.generateGaugeMetric('alerts_count', metrics.alertsCount)

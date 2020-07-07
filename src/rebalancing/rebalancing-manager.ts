@@ -14,7 +14,7 @@ export default class RebalancingManager {
     const {near, rebalancingConfig, logger} = this;
 
     const data = await fetchStakingData(near, account, rebalancingConfig.validatorAccountId, rebalancingConfig.delegatorAccountId);
-    logger.log('info', `current seatPrice ${c2h(data.seatPrices.current)}, next seatPrice ${c2h(data.seatPrices.next)}, poolStake ${c2h(data.poolTotalStake)}, ratio ${c2h(data.poolTotalStake)/c2h(data.seatPrices.next)} (desired range : [${rebalancingConfig.levels.lowThreshold}, ${rebalancingConfig.levels.highThreshold}])`);
+    logger.log('info', `current seatPrice ${c2h(data.seatPrices.current)}, next seatPrice ${c2h(data.seatPrices.next)}, proposals seatPrice ${c2h(data.seatPrices.proposals)} poolStake ${c2h(data.poolTotalStake)}, ratio ${c2h(data.poolTotalStake)/c2h(data.seatPrices.next)} (desired range : [${rebalancingConfig.levels.lowThreshold}, ${rebalancingConfig.levels.highThreshold}])`);
     return data;
   }
 

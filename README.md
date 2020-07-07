@@ -68,10 +68,10 @@ And modify it according to your needs :
   "rebalancing": {
     "enabled": true,
     "levels": {
-      "lowThreshold": 1.1,
-      "lowTarget": 1.2,
-      "highTarget": 1.8,
-      "highThreshold": 1.9
+      "lowThreshold": 1.2,
+      "lowTarget": 1.3,
+      "highTarget": 1.7,
+      "highThreshold": 1.8
     },
     "policy": {
       "type": "BEST",
@@ -93,7 +93,7 @@ And modify it according to your needs :
 - `near.keystoreDir` should have the same structure as your `~/.near-credentials/` folder (which is default value if you simply omit it). It should contain at least of keys associated with `delegatorAccountId`.
 #### rebalancing{}
 - `rebalancing.levels` defines at what levels (`lowThreshold`, `highThreshold`) the automatic rebalancing should be triggered and to what levels (`lowTarget`, `highTarget`) it should put the stake by rebalancing.
-Ex: If current seat price is 1000 and the currently staked balance in the pool is 1950, it will trigger the `highThreshold` (1950 > 1000 * `1.9`) and take action to set the staked balance in the pool to 1800 (`1.8` * 1000).
+Ex: If current seat price is 1000 and the currently staked balance in the pool is 1850, it will trigger the `highThreshold` (1850 > 1000 * `1.8`) and take action to set the staked balance in the pool to 1700 (`1.7` * 1000).
 - `rebalancing.policy` defines what to do when the delegator account does have enough fund deposited in the pool to meet the stake/unstake target. Setting the type to `BEST` will make the delegator account stake/unstake as many tokens as it can even if it is not enough to meet the `lowTarget`/`highTarget`. It is triggered only if the user can stake/unstake at least `minRebalanceAmount` (in NEAR).
 
 Another option for `rebalancing.policy` is FOK, which simply doesn't take any action if the delegator account doesn't have enough fund deposited :
@@ -158,6 +158,10 @@ suricate_pool_delegator_unstaked_balance 26752.866777301828
 # HELP suricate_seat_price_next suricate_seat_price_next
 # TYPE suricate_seat_price_next gauge
 suricate_seat_price_next 106597.07229753271
+
+# HELP suricate_seat_price_proposals suricate_seat_price_proposals
+# TYPE suricate_seat_price_proposals gauge
+suricate_seat_price_proposals 107145.27592851459
 
 # HELP suricate_seat_price_low_threshold suricate_seat_price_low_threshold
 # TYPE suricate_seat_price_low_threshold gauge

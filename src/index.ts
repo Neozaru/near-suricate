@@ -43,10 +43,10 @@ function parseArgv() {
   .default('near.keystoreDir', os.homedir() + '/.near-credentials')
 
   .default('rebalancing.enabled', true)
-  .default('rebalancing.levels.lowThreshold', 1.1)
-  .default('rebalancing.levels.lowTarget', 1.2)
-  .default('rebalancing.levels.highTarget', 1.8)
-  .default('rebalancing.levels.highThreshold', 1.9)
+  .default('rebalancing.levels.lowThreshold', 1.2)
+  .default('rebalancing.levels.lowTarget', 1.3)
+  .default('rebalancing.levels.highTarget', 1.7)
+  .default('rebalancing.levels.highThreshold', 1.8)
   .default('rebalancing.policy.type', 'BEST')
   .default('rebalancing.policy.minRebalanceAmount', 1000)
 

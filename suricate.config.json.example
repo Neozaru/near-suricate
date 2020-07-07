@@ -8,10 +8,10 @@
   "rebalancing": {
     "enabled": true,
     "levels": {
-      "lowThreshold": 1.1,
-      "lowTarget": 1.2,
-      "highTarget": 1.8,
-      "highThreshold": 1.9
+      "lowThreshold": 1.2,
+      "lowTarget": 1.3,
+      "highTarget": 1.7,
+      "highThreshold": 1.8
     },
     "policy": {
       "type": "BEST",
