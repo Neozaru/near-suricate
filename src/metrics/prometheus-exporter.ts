@@ -4,6 +4,10 @@ import { c2h } from '../utils';
 import { StakingData } from '../near-utils';
 
 interface SuricateMetrics extends StakingData {
+  stakingData: any,
+  seatPrices: any,
+  epochInfo: any,
+  validatorInfo: any,
   lowThresholdSeatPrice: BN,
   highThresholdSeatPrice: BN,
   alertsCount: number,
@@ -34,14 +38,23 @@ ${key} ${value}
   }
 
   private generateMetricsString(metrics: SuricateMetrics) {
-    return this.generateNearAmountMetric('pool_total_staked_balance', metrics.poolTotalStake)
-    + this.generateNearAmountMetric('pool_delegator_staked_balance', metrics.poolDelegatorStakedBalance)
-    + this.generateNearAmountMetric('pool_delegator_unstaked_balance', metrics.poolDelegatorUnstakedBalance)
+    return this.generateNearAmountMetric('pool_total_staked_balance', metrics.stakingData.poolTotalStake)
+    + this.generateNearAmountMetric('pool_delegator_staked_balance', metrics.stakingData.poolDelegatorStakedBalance)
+    + this.generateNearAmountMetric('pool_delegator_unstaked_balance', metrics.stakingData.poolDelegatorUnstakedBalance)
     + this.generateNearAmountMetric('seat_price_current', metrics.seatPrices.current)
     + this.generateNearAmountMetric('seat_price_next', metrics.seatPrices.next)
     + this.generateNearAmountMetric('seat_price_proposals', metrics.seatPrices.proposals)
-    + this.generateNearAmountMetric('seat_price_low_threshold', metrics.lowThresholdSeatPrice)
-    + this.generateNearAmountMetric('seat_price_high_threshold', metrics.highThresholdSeatPrice)
+    + this.generateNearAmountMetric('seat_price_low_threshold', metrics.seatPrices.lowThresholdNextSeatPrice)
+    + this.generateNearAmountMetric('seat_price_high_threshold', metrics.seatPrices.highThresholdNextSeatPrice)
+    + this.generateGaugeMetric('validator_produced_blocks', metrics.validatorInfo.producedBlocks)
+    + this.generateGaugeMetric('validator_expected_blocks', metrics.validatorInfo.expectedBlocks)
+    + this.generateGaugeMetric('validator_uptime_ratio', metrics.validatorInfo.uptimeRatio)
+    + this.generateGaugeMetric('epoch_id', metrics.epochInfo.id)
+    + this.generateGaugeMetric('epoch_id_float', metrics.epochInfo.idFloat)
+    + this.generateGaugeMetric('epoch_start_height', metrics.epochInfo.startHeight)
+    + this.generateGaugeMetric('epoch_progress', metrics.epochInfo.progress)
+    + this.generateGaugeMetric('epoch_blocks', metrics.epochInfo.blocks)
+    
     + this.generateGaugeMetric('alerts_count', metrics.alertsCount)
   }
 

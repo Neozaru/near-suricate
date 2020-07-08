@@ -147,31 +147,67 @@ The following metrics are exported for *Prometheus* on `http://<yourHost>:3039/m
 ```
 # HELP suricate_pool_total_staked_balance suricate_pool_total_staked_balance
 # TYPE suricate_pool_total_staked_balance gauge
-suricate_pool_total_staked_balance 159168.66303537274
+suricate_pool_total_staked_balance 168524.20893628307
 
 # HELP suricate_pool_delegator_staked_balance suricate_pool_delegator_staked_balance
 # TYPE suricate_pool_delegator_staked_balance gauge
-suricate_pool_delegator_staked_balance 48454.43643298201
+suricate_pool_delegator_staked_balance 56390.831213471494
 
 # HELP suricate_pool_delegator_unstaked_balance suricate_pool_delegator_unstaked_balance
 # TYPE suricate_pool_delegator_unstaked_balance gauge
-suricate_pool_delegator_unstaked_balance 26752.866777301828
+suricate_pool_delegator_unstaked_balance 19485.220010316676
+
+# HELP suricate_seat_price_current suricate_seat_price_current
+# TYPE suricate_seat_price_current gauge
+suricate_seat_price_current 107168.27592853646
 
 # HELP suricate_seat_price_next suricate_seat_price_next
 # TYPE suricate_seat_price_next gauge
-suricate_seat_price_next 106597.07229753271
+suricate_seat_price_next 112327.51129207034
 
 # HELP suricate_seat_price_proposals suricate_seat_price_proposals
 # TYPE suricate_seat_price_proposals gauge
-suricate_seat_price_proposals 107145.27592851459
+suricate_seat_price_proposals 113267.00549267698
 
 # HELP suricate_seat_price_low_threshold suricate_seat_price_low_threshold
 # TYPE suricate_seat_price_low_threshold gauge
-suricate_seat_price_low_threshold 149235.59898509088
+suricate_seat_price_low_threshold 157258.21357744085
 
 # HELP suricate_seat_price_high_threshold suricate_seat_price_high_threshold
 # TYPE suricate_seat_price_high_threshold gauge
-suricate_seat_price_high_threshold 202534.43736531216
+suricate_seat_price_high_threshold 213422.27145493322
+
+# HELP suricate_validator_produced_blocks suricate_validator_produced_blocks
+# TYPE suricate_validator_produced_blocks gauge
+suricate_validator_produced_blocks 32
+
+# HELP suricate_validator_expected_blocks suricate_validator_expected_blocks
+# TYPE suricate_validator_expected_blocks gauge
+suricate_validator_expected_blocks 32
+
+# HELP suricate_validator_uptime_ratio suricate_validator_uptime_ratio
+# TYPE suricate_validator_uptime_ratio gauge
+suricate_validator_uptime_ratio 100
+
+# HELP suricate_epoch_id suricate_epoch_id
+# TYPE suricate_epoch_id gauge
+suricate_epoch_id 10
+
+# HELP suricate_epoch_id_float suricate_epoch_id_float
+# TYPE suricate_epoch_id_float gauge
+suricate_epoch_id_float 10.3278
+
+# HELP suricate_epoch_start_height suricate_epoch_start_height
+# TYPE suricate_epoch_start_height gauge
+suricate_epoch_start_height 9040874
+
+# HELP suricate_epoch_progress suricate_epoch_progress
+# TYPE suricate_epoch_progress gauge
+suricate_epoch_progress 32.69
+
+# HELP suricate_epoch_blocks suricate_epoch_blocks
+# TYPE suricate_epoch_blocks gauge
+suricate_epoch_blocks 3269
 
 # HELP suricate_alerts_count suricate_alerts_count
 # TYPE suricate_alerts_count gauge

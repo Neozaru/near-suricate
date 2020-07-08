@@ -5,8 +5,8 @@ import MailEmitter from "./mail-emitter";
 import { statusAlerts, validatorsAlerts } from "./alerts";
 import ConsoleEmitter from "./console-emitter";
 import { createLoggerWithLabel } from "../logger-factory";
-import { validatorsInfo } from "../near-utils";
-import { computeEpochIdFromInfoAndBlockHeight } from "../utils";
+import { reqValidatorsInfo } from "../near-utils";
+import { computeEpochInfo } from "../utils";
 
 import _ from 'lodash';
 
@@ -66,16 +66,16 @@ export default class AlertsManager {
 
     let alerts: SuricateAlert[] = [];
     const status = await near.connection.provider.status();
-    // console.log('Status', status);
+
     const latestBlockHeight = status.sync_info.latest_block_height 
     alerts = alerts.concat(statusAlerts(status));
 
-    const valInfo = await validatorsInfo(near, latestBlockHeight);
+    const valInfo = await reqValidatorsInfo(near, latestBlockHeight);
     alerts = alerts.concat(validatorsAlerts(valInfo, alertsConfig.validatorAccountId));
 
-    const epochId = computeEpochIdFromInfoAndBlockHeight(valInfo, latestBlockHeight);
+    const epochInfo = computeEpochInfo(valInfo, latestBlockHeight);
 
-    return this.generateAlertsReport(alerts, epochId);
+    return this.generateAlertsReport(alerts, epochInfo.id);
   }
 
   private async emitAlertReport(alertsReport: ISuricateAlertsReport) {
