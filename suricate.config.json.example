@@ -1,12 +1,14 @@
 {
   "delegatorAccountId": "neozaru14.betanet",
   "poolAccountId": "neozaru.stakehouse.betanet",
+  "interval": 300,
   "near": {
     "networkId": "betanet",
     "nodeUrl": "https://rpc.betanet.near.org/"
   },
   "rebalancing": {
     "enabled": true,
+    "autoping": true,
     "levels": {
       "lowThreshold": 1.2,
       "lowTarget": 1.3,

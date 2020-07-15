@@ -1,5 +1,5 @@
 import { createLoggerWithLabel } from "../logger-factory";
-import { fetchStakingData, reqSeatPrices, executeStakeUnstakeAction } from "../near-utils";
+import { fetchStakingData, reqSeatPrices, executePing, executeStakeUnstakeAction } from "../near-utils";
 import { c2h } from "../utils";
 import { generateProposedAction, generateActionToExecute, actionToString } from "./stake-unstake-actions";
 
@@ -10,8 +10,13 @@ export default class RebalancingManager {
 
   constructor(private near, private rebalancingConfig) {}
 
-  private refreshStakingData(account) {
-    const {rebalancingConfig} = this;
+  private async refreshStakingData(account) {
+    const {rebalancingConfig, logger} = this;
+    if (rebalancingConfig.autoping) {
+      logger.log('info', `Ping-ing ${rebalancingConfig.validatorAccountId}...`)
+      await executePing(account, rebalancingConfig.validatorAccountId, rebalancingConfig.delegatorAccountId);
+    }
+    logger.log('info', `Fetching staking data ${rebalancingConfig.validatorAccountId}...`)
     return fetchStakingData(account, rebalancingConfig.validatorAccountId, rebalancingConfig.delegatorAccountId);
   }
 
@@ -31,7 +36,7 @@ export default class RebalancingManager {
   public async checkAndRebalanceStakeForAccount(account) {
     const {near, rebalancingConfig, logger} = this;
 
-    logger.log('info', 'Starting refresh...')
+    logger.log('info', 'Starting refresh...');
     const stakingData = await this.refreshStakingData(account);
     const seatPrices = await reqSeatPrices(near);
     logger.log('info', `current seatPrice ${c2h(seatPrices.current)}, next seatPrice ${c2h(seatPrices.next)}, proposals seatPrice ${c2h(seatPrices.proposals)} poolStake ${c2h(stakingData.poolTotalStake)}, ratio ${c2h(stakingData.poolTotalStake)/c2h(seatPrices.next)} (desired range : [${rebalancingConfig.levels.lowThreshold}, ${rebalancingConfig.levels.highThreshold}])`);

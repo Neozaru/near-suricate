@@ -67,6 +67,7 @@ And modify it according to your needs :
   },
   "rebalancing": {
     "enabled": true,
+    "autoping": true,
     "levels": {
       "lowThreshold": 1.2,
       "lowTarget": 1.3,
@@ -92,6 +93,7 @@ And modify it according to your needs :
 #### near{}
 - `near.keystoreDir` should have the same structure as your `~/.near-credentials/` folder (which is default value if you simply omit it). It should contain at least of keys associated with `delegatorAccountId`.
 #### rebalancing{}
+- `rebalancing.autoping` means that a `ping` command will be sent before every rebalancing check (every `interval`). This should consume a tiny amount of gas but will allow your node to automatically restake without manual intervention if it gets kicked out.
 - `rebalancing.levels` defines at what levels (`lowThreshold`, `highThreshold`) the automatic rebalancing should be triggered and to what levels (`lowTarget`, `highTarget`) it should put the stake by rebalancing.
 Ex: If current seat price is 1000 and the currently staked balance in the pool is 1850, it will trigger the `highThreshold` (1850 > 1000 * `1.8`) and take action to set the staked balance in the pool to 1700 (`1.7` * 1000).
 - `rebalancing.policy` defines what to do when the delegator account does have enough fund deposited in the pool to meet the stake/unstake target. Setting the type to `BEST` will make the delegator account stake/unstake as many tokens as it can even if it is not enough to meet the `lowTarget`/`highTarget`. It is triggered only if the user can stake/unstake at least `minRebalanceAmount` (in NEAR).

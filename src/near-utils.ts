@@ -57,8 +57,8 @@ function reqPoolGetAccountUnstakedBalance(account, accountId, poolAccountId) {
   return account.viewFunction(poolAccountId, 'get_account_unstaked_balance', {account_id: accountId}).then((res) => new BN(res))
 }
 
-function executePing(account, accountId, poolAccountId) {
-  return account.functionCall(poolAccountId, 'ping', {account_id: accountId})
+function executePing(account, poolAccountId, delegatorAccountId) {
+  return account.functionCall(poolAccountId, 'ping', {account_id: delegatorAccountId})
 }
 
 function executeStakeUnstakeAction(account, action, contractId) {
@@ -93,6 +93,7 @@ function generateConnectionConfig(nearConfig) {
 
 export {
   fetchStakingData,
+  executePing,
   executeStakeUnstakeAction,
   generateConnectionConfig,
   reqValidatorsInfo,
