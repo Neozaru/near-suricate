@@ -14,7 +14,12 @@ export default class RebalancingManager {
     const {rebalancingConfig, logger} = this;
     if (rebalancingConfig.autoping) {
       logger.log('info', `Ping-ing ${rebalancingConfig.validatorAccountId}...`)
-      await executePing(account, rebalancingConfig.validatorAccountId, rebalancingConfig.delegatorAccountId);
+      try {
+        await executePing(account, rebalancingConfig.validatorAccountId, rebalancingConfig.delegatorAccountId);
+      }
+      catch (error) {
+        logger.log('warn', `Ping failed : ${JSON.stringify(error)}`);
+      }
     }
     logger.log('info', `Fetching staking data ${rebalancingConfig.validatorAccountId}...`)
     return fetchStakingData(account, rebalancingConfig.validatorAccountId, rebalancingConfig.delegatorAccountId);
