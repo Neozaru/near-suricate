@@ -1,5 +1,5 @@
 import { createLoggerWithLabel } from "../logger-factory";
-import { fetchStakingData, reqSeatPrices, executePing, executeStakeUnstakeAction } from "../near-utils";
+import { fetchStakingData, reqSeatPrices, executePing, executeStakeUnstakeAction, retrieveCurrentEpoch } from "../near-utils";
 import { c2h } from "../utils";
 import { generateProposedAction, generateActionToExecute, actionToString } from "./stake-unstake-actions";
 
@@ -7,18 +7,27 @@ import { generateProposedAction, generateActionToExecute, actionToString } from 
 export default class RebalancingManager {
 
   logger = createLoggerWithLabel('Rebalancing');
+  lastEpochIdPinged = -1;
 
   constructor(private near, private rebalancingConfig) {}
 
   private async refreshStakingData(account) {
-    const {rebalancingConfig, logger} = this;
+    const {near, rebalancingConfig, logger} = this;
+
     if (rebalancingConfig.autoping) {
-      logger.log('info', `Ping-ing ${rebalancingConfig.validatorAccountId}...`)
-      try {
-        await executePing(account, rebalancingConfig.validatorAccountId, rebalancingConfig.delegatorAccountId);
-      }
-      catch (error) {
-        logger.log('warn', `Ping failed : ${JSON.stringify(error)}`);
+      // Auto-Pinging only every epoch for gas-saving purposes
+      let currentEpoch = await retrieveCurrentEpoch(near);
+      if (currentEpoch.id > this.lastEpochIdPinged) {
+        logger.log('info', `New epoch ${currentEpoch.id} - Ping-ing ${rebalancingConfig.validatorAccountId}...`)
+        try {
+          await executePing(account, rebalancingConfig.validatorAccountId);
+          this.lastEpochIdPinged = currentEpoch.id; 
+        }
+        catch (error) {
+          console.error(error)
+          logger.log('warn', `Ping failed : ${JSON.stringify(error)}`);
+        }
+
       }
     }
     logger.log('info', `Fetching staking data ${rebalancingConfig.validatorAccountId}...`)

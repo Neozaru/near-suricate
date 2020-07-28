@@ -2,6 +2,8 @@
 import * as nearApi from 'near-api-js';
 import BN from 'bn.js';
 
+import { computeEpochInfo } from './utils';
+
 interface SeatPrices {
   current: BN, next: BN, proposals: BN
 }
@@ -45,6 +47,14 @@ function computeSeatPricesFromValidatorsInfo(validatorsInfo): SeatPrices {
   };
 }
 
+async function retrieveCurrentEpoch(near) {
+  const status = await near.connection.provider.status();
+  const latestBlockHeight = status.sync_info.latest_block_height 
+  const valInfo = await reqValidatorsInfo(near, latestBlockHeight);
+
+  return computeEpochInfo(valInfo, latestBlockHeight);
+}
+
 function reqPoolGetTotalStakedBalance(account, poolAccountId) {
   return account.viewFunction(poolAccountId, 'get_total_staked_balance', null).then((res) => new BN(res))
 }
@@ -57,8 +67,8 @@ function reqPoolGetAccountUnstakedBalance(account, accountId, poolAccountId) {
   return account.viewFunction(poolAccountId, 'get_account_unstaked_balance', {account_id: accountId}).then((res) => new BN(res))
 }
 
-function executePing(account, poolAccountId, delegatorAccountId) {
-  return account.functionCall(poolAccountId, 'ping', {account_id: delegatorAccountId})
+function executePing(account, poolAccountId) {
+  return account.functionCall(poolAccountId, 'ping', {}, '100000000000000')
 }
 
 function executeStakeUnstakeAction(account, action, contractId) {
@@ -92,6 +102,7 @@ function generateConnectionConfig(nearConfig) {
 }
 
 export {
+  retrieveCurrentEpoch,
   fetchStakingData,
   executePing,
   executeStakeUnstakeAction,

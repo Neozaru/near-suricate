@@ -10,9 +10,6 @@ import {
   generateConnectionConfig,
 } from './near-utils';
 
-import AlertsManager from './alerts/alerts-manager';
-import RebalancingManager from './rebalancing/rebalancing-manager';
-import MetricsManager from './metrics/metrics-manager';
 import FlowRunner from './flow-runner';
 
 const APP_NAME = 'near-suricate'
