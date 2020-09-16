@@ -1,4 +1,8 @@
+import _ from 'lodash';
+
 import SuricateAlert from './ISuricateAlert';
+import ISuricateAlertsReport from './ISuricateAlertsReport';
+import ISuricateAlert from './ISuricateAlert';
 
 // TODO: Make it somewhat configurable
 const BLOCKS_PRODUCED_EXPECTED_ALERT_RATIO = 0.95;
@@ -91,6 +95,45 @@ function validatorsAlerts(validatorsInfo: any, poolAccountId: string): SuricateA
 }
 
 
+function alertString(alert): string {
+  return `- ${alert.type}: ${alert.message}`
+}
+
+function alertsListText(alerts: ISuricateAlert[]) {
+  return alerts.map(alertString).join('\n');
+}
+
+function alertsTypesList(alerts: ISuricateAlert[]) {
+  return _.map(alerts, 'type').join(', ');
+}
+
+function alertsListHTML(alerts: ISuricateAlert[]) {
+  return alerts.map(alertString).join('<br>');
+}
+
+function alertsReportToText(alertsReport: ISuricateAlertsReport): String {
+  const {alerts, addedAlerts, removedAlerts} = alertsReport;
+
+  const textBodyAddedAlerts = addedAlerts.length > 0 ? `New alerts detected:\n${alertsListText(addedAlerts)}` : null;
+  const textBodyRemovedAlerts = removedAlerts.length > 0 ? `The following alerts are no longer an issue:\n${alertsListText(removedAlerts)}`: null;
+
+  const textActiveAlerts = alerts.length > 0 ? `Active alerts :\n${alertsTypesList(alerts)}` : null;
+
+  return `${_.compact([textBodyAddedAlerts, textBodyRemovedAlerts, textActiveAlerts]).join('\n')}\nEpoch ID: ${alertsReport.context.epochId}`;
+}
+
+
+function alertsReportToHTML(alertsReport: ISuricateAlertsReport): String {
+  const {alerts, addedAlerts, removedAlerts} = alertsReport;
+
+  const htmlBodyAddedAlerts = addedAlerts.length > 0 ? `New alerts detected:<br>${alertsListHTML(addedAlerts)}` : null;
+  const htmlBodyRemovedAlerts = removedAlerts.length > 0 ? `The following alerts are no longer an issue:<br>${alertsListHTML(removedAlerts)}`: null;
+
+  const htmlActiveAlerts = alerts.length > 0 ? `Active alerts :<br>${alertsTypesList(alerts)}` : null;
+
+  return  `${_.compact([htmlBodyAddedAlerts, htmlBodyRemovedAlerts, htmlActiveAlerts]).join('<br>')}<br>Epoch ID: ${alertsReport.context.epochId}`;
+}
+
 // TODO: Type status
 function statusAlerts(status: any): SuricateAlert[] {
   let alerts: SuricateAlert[] = [];
@@ -100,8 +143,9 @@ function statusAlerts(status: any): SuricateAlert[] {
   return alerts;
 }
 
-
 export {
   statusAlerts,
   validatorsAlerts,
+  alertsReportToText,
+  alertsReportToHTML,
 }

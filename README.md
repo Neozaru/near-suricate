@@ -134,6 +134,20 @@ By default, they are logged to the console. You can set up email alerts by modif
 ```
 ... will send alert both by mail and to the console.
 Note that the `alerts.mail.smtp{}` field format is the same as [Nodemailer](https://nodemailer.com/about/) library syntax.
+
+[NEW] Use your own Telegram Bot to receive alerts :
+```
+"alerts": {
+  "enabled": true,
+  "emitters": ["telegram", "console"],
+  "telegram": {
+    "token": "<yourBotToken>",
+    "channelId": "<yourChannelIdOrUserId>"
+  }
+}
+```
+Where `token` is the "HTTP API" token given by `@FatherBot` when creating your bot from Telegram (https://core.telegram.org/bots#creating-a-new-bot) and `channelId` can be your own user ID given by talking with `@userinfobot` (it can probably be the ID of an actual channel as well but I am not familiar with Telegram).
+
 Right now, alert emitted are :
 - `NOT_CURRENT_VALIDATOR` the validator account `validatorAccountId` (`poolAccountId`) is not in the validators list for current epoch.
 - `NOT_NEXT_VALIDATOR` the validator account `validatorAccountId` (`poolAccountId`) is not in the validators list for next epoch.

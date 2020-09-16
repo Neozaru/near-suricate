@@ -9,10 +9,12 @@ import { reqValidatorsInfo } from "../near-utils";
 import { computeEpochInfo } from "../utils";
 
 import _ from 'lodash';
+import TelegramEmitter from "./telegram-emitter";
 
 const emittersFactory = {
   'mail': config => new MailEmitter(config),
   'console': config => new ConsoleEmitter(),
+  'telegram': config => new TelegramEmitter(config)
 }
 
 export default class AlertsManager {
